@@ -8,7 +8,29 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+        container: { center: true, padding: { DEFAULT: "1rem", lg: "2rem" } },
+        extend: {
+        borderRadius: { xl: "1rem", "2xl": "1.25rem" },
+        boxShadow: {
+        soft: "0 8px 30px rgba(0,0,0,0.06)",
+        },
+        colors: {
+        bg: "hsl(var(--background))",
+        fg: "hsl(var(--foreground))",
+        muted: "hsl(var(--muted))",
+        card: "hsl(var(--card))",
+        border: "hsl(var(--border))",
+        primary: {
+        DEFAULT: "hsl(var(--primary))",
+        foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+        DEFAULT: "hsl(var(--secondary))",
+        foreground: "hsl(var(--secondary-foreground))",
+        },
+      },
+    },
   },
+
   plugins: [],
 };
