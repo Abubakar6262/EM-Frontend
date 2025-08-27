@@ -1,24 +1,38 @@
 "use client";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/ui/Button";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { ResetPasswordSchema } from "@/validations/authSchema";
 import { authService } from "@/services/auth";
-import { useDispatch } from "react-redux";
-import { setUser } from "@/store/slices/authSlice";
-import { AppDispatch } from "@/store";
-import Link from "next/link";
-import { LoginSchema } from "@/validations/authSchema";
-import { handleApiError } from "@/lib/utils";
-import { useRouter } from "next/navigation"; // ✅ correct import
 
-export default function LoginPage() {
-    const dispatch = useDispatch<AppDispatch>();
-    const [errorMessage, setErrorMessage] = useState("");
-    const initialValues = { email: "", password: "" };
 
+// ✅ Payload type
+type ResetPasswordPayload = {
+    newPassword: string;
+    confirmPassword: string;
+};
+
+
+export default function ResetPasswordPage() {
+    const [message, setMessage] = useState<string>("");
+    const [errorMessage, setErrorMessage] = useState<string>("");
+    const searchParams = useSearchParams();
     const router = useRouter();
+    const token = searchParams.get("token") || "";
+
+    useEffect(() => {
+        if (!token) {
+            setErrorMessage("Invalid or missing token.");
+        }
+    }, [token]);
+
+    const initialValues: ResetPasswordPayload = {
+        newPassword: "",
+        confirmPassword: "",
+    };
 
     return (
         <div className="flex min-h-screen">
@@ -31,39 +45,39 @@ export default function LoginPage() {
                     className="w-full max-w-md p-8"
                 >
                     <h1 className="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-gray-100">
-                        Login
+                        Reset Password
                     </h1>
 
-                    {errorMessage && (
-                        <p className="text-red-500 text-center mb-4">{errorMessage}</p>
-                    )}
+                    {message && <p className="text-green-500 text-center mb-4">{message}</p>}
+                    {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
 
                     <Formik
                         initialValues={initialValues}
-                        validationSchema={LoginSchema}
+                        validationSchema={ResetPasswordSchema}
                         onSubmit={async (values, { setSubmitting }) => {
                             setErrorMessage("");
+                            setMessage("");
                             try {
-                                const data = await authService.login(values);
-                                console.log("Login response:", data);
+                                if (!token) throw new Error("Token is missing");
 
+                                //  Pass two arguments separately
+                                const data = await authService.resetPassword(token, values.newPassword);
                                 if (!data.success) {
-                                    setErrorMessage(data.message || "Login failed");
+                                    setErrorMessage(data.message || "Somthing went wrong");
                                     setSubmitting(false);
                                     return;
                                 }
+                                
+                                // empty value
+                                values.newPassword = "";
+                                values.confirmPassword = "";
 
-                                await dispatch(setUser(data.user));
-
-                                if (data?.user?.role === "ORGANIZER") {
-                                    router.replace("/dashboard");
-                                } else if (data?.user?.role === "PARTICIPANT") {
-                                    router.replace("/events");
-                                } else {
-                                    router.replace("/");
-                                }
-                            } catch (err) {
-                                handleApiError(err);
+                                setMessage("Password updated successfully! Redirecting to login...");
+                                setTimeout(() => router.push("/login"), 3000);
+                            } catch (err: unknown) { 
+                                console.error(err);                            
+                                    setErrorMessage("Something went wrong. Please try again.");
+                               
                             } finally {
                                 setSubmitting(false);
                             }
@@ -71,43 +85,34 @@ export default function LoginPage() {
                     >
                         {({ isSubmitting }) => (
                             <Form className="grid gap-6">
-                                {/* Email */}
+                                {/* New Password */}
                                 <div>
                                     <Field
-                                        type="email"
-                                        name="email"
-                                        placeholder="Email"
+                                        type="password"
+                                        name="newPassword"
+                                        placeholder="Enter new password"
                                         className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
                                     <ErrorMessage
-                                        name="email"
+                                        name="newPassword"
                                         component="p"
                                         className="text-red-500 text-sm mt-1"
                                     />
                                 </div>
 
-                                {/* Password */}
+                                {/* Confirm Password */}
                                 <div>
                                     <Field
                                         type="password"
-                                        name="password"
-                                        placeholder="Password"
+                                        name="confirmPassword"
+                                        placeholder="Confirm new password"
                                         className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
                                     <ErrorMessage
-                                        name="password"
+                                        name="confirmPassword"
                                         component="p"
                                         className="text-red-500 text-sm mt-1"
                                     />
-                                    {/* Forgot Password Link */}
-                                    <div className="text-right mt-2">
-                                        <Link
-                                            href="/forgot-password"
-                                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                                        >
-                                            Forgot Password?
-                                        </Link>
-                                    </div>
                                 </div>
 
                                 <Button
@@ -117,31 +122,20 @@ export default function LoginPage() {
                                     loading={isSubmitting}
                                     className="w-full"
                                 >
-                                    Login
+                                    Update Password
                                 </Button>
-
-                                {/* Signup Link */}
-                                <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-                                    Don’t have an account?{" "}
-                                    <Link
-                                        href="/signup"
-                                        className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-                                    >
-                                        Sign up
-                                    </Link>
-                                </p>
                             </Form>
                         )}
                     </Formik>
                 </motion.div>
             </div>
 
-            {/* Right Side Background */}
+            {/* Right Side */}
             <div className="hidden lg:flex w-1/2 bg-indigo-600 dark:bg-indigo-800 text-white items-center justify-center p-8">
                 <div className="text-center space-y-4">
-                    <h2 className="text-3xl font-bold">Welcome Back</h2>
+                    <h2 className="text-3xl font-bold">Secure Your Account</h2>
                     <p className="text-lg">
-                        Log in to manage your events and participate easily.
+                        Enter your new password to reset your account securely.
                     </p>
                 </div>
             </div>

@@ -7,10 +7,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { authService } from "@/services/auth";
 import { ForgotPasswordSchema } from "@/validations/authSchema";
+import { notify } from "@/data/global";
 
 
 
-// ✅ Payload type
+//  Payload type
 type ForgotPasswordPayload = {
     email: string;
 };
@@ -48,8 +49,12 @@ export default function ForgotPasswordPage() {
                                 // Assuming backend endpoint exists: POST /auth/forgot-password
                                 const { email } = values;
                                 await authService.forgotPassword({ email });
-                                setMessage("If your email is registered, you will receive a reset link.");
+                                setMessage("Link sent to your email. Please check your inbox.");
+                                notify("Link sent to your email. Please check your inbox.", "success");
+                                // empty value
+                                values.email = "";
                             } catch (err: unknown) {
+                                console.error(err);
                                 setErrorMessage("Something went wrong. Please try again.");
                             } finally {
                                 setSubmitting(false);

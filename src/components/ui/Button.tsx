@@ -1,12 +1,23 @@
 "use client";
 import { cn } from "../../lib/utils";
 import { motion } from "framer-motion";
-import React from "react";
+import React, { ComponentProps } from "react";
 
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "ghost";
+type MotionButtonProps = ComponentProps<typeof motion.button>;
+
+type Props = Omit<MotionButtonProps, "children"> & {
+    variant?:
+    | "primary"
+    | "secondary"
+    | "ghost"
+    | "danger"
+    | "warning"
+    | "outlinePrimary"
+    | "outlineSecondary"
+    | "outlineDanger";
     size?: "sm" | "md" | "lg";
     loading?: boolean;
+    children?: React.ReactNode;
 };
 
 export default function Button({
@@ -24,6 +35,16 @@ export default function Button({
         primary: "bg-primary text-primary-foreground hover:opacity-90",
         secondary: "bg-secondary text-secondary-foreground hover:opacity-90",
         ghost: "bg-transparent border border-border hover:bg-muted",
+
+        danger: "bg-danger text-danger-foreground hover:opacity-90",
+        warning: "bg-yellow-500 text-white hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700",
+
+        outlinePrimary:
+            "border border-primary text-primary hover:bg-primary hover:text-primary-foreground",
+        outlineSecondary:
+            "border border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground",
+        outlineDanger:
+            "border border-danger text-danger hover:bg-danger hover:text-danger-foreground",
     } as const;
 
     const sizes = {

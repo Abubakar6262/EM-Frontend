@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import auth from "./slices/authSlice";
+import events from "./slices/eventSlice";
+import participants from "./slices/participantSlice";
 
 export const store = configureStore({
-  reducer: { auth },
+  reducer: { auth, events, participants },
   devTools: process.env.NODE_ENV !== "production",
 });
 

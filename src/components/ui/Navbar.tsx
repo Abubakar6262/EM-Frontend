@@ -7,21 +7,29 @@ import { Menu, X, User, Settings, LogOut } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
+import { authService } from "@/services/auth";
+import { notify } from "@/data/global";
+import { clearUser } from "@/store/slices/authSlice";
 // import { logout } from "@/store/slices/authSlice";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const dispatch = useDispatch();
 
-    // const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
 
-    const handleLogout = () => {
-        // dispatch(logout());
-        // optional: redirect to home
-        // router.push("/");
+    const handleLogout = async () => {
+        try {
+            await authService.logout(); 
+            dispatch(clearUser());
+            notify("Logout successful","success");
+        } catch (err) {
+            console.error("Logout error:", err);
+            notify("Logout failed","error");
+        } 
     };
 
     const isAuthenticated = Boolean(user);
@@ -37,6 +45,15 @@ export default function Navbar() {
 
                     {/* Desktop Nav */}
                     <div className="hidden md:flex space-x-6 items-center">
+                        {user?.role === "ORGANIZER" &&(
+                            <Link
+                                href="/dashboard"
+                                className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
+                            >
+                                Dashboard
+                            </Link>
+                        )}
+
                         <Link
                             href="/"
                             className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
@@ -55,6 +72,12 @@ export default function Navbar() {
                         >
                             Contact
                         </Link>
+                        <Link
+                            href="/events"
+                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
+                        >
+                            Events
+                        </Link>
 
                         {/* Theme toggle for desktop */}
                         <ThemeToggle />
@@ -70,24 +93,24 @@ export default function Navbar() {
                             </div>
                         ) : (
                             <div className="relative">
-                                    <button
-                                        onClick={() => setProfileOpen((p) => !p)}
-                                        className="flex items-center space-x-2 focus:outline-none"
-                                    >
-                                        {user?.profilePic ? (
-                                            <Image
-                                                src={user.profilePic}
-                                                alt="profile"
-                                                width={36}
-                                                height={36}
-                                                className="w-9 h-9 rounded-full border object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-9 h-9 rounded-full border flex items-center justify-center bg-indigo-100 text-indigo-600 font-bold">
-                                                    {user?.fullName?.charAt(0).toUpperCase() || "U"}
-                                            </div>
-                                        )}
-                                    </button>
+                                <button
+                                    onClick={() => setProfileOpen((p) => !p)}
+                                    className="flex items-center space-x-2 focus:outline-none"
+                                >
+                                    {user?.profilePic ? (
+                                        <Image
+                                            src={user.profilePic}
+                                            alt="profile"
+                                            width={36}
+                                            height={36}
+                                            className="w-9 h-9 rounded-full border object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-9 h-9 rounded-full border flex items-center justify-center bg-indigo-100 text-indigo-600 font-bold">
+                                            {user?.fullName?.charAt(0).toUpperCase() || "U"}
+                                        </div>
+                                    )}
+                                </button>
 
                                 <AnimatePresence>
                                     {profileOpen && (
@@ -96,8 +119,22 @@ export default function Navbar() {
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -5 }}
                                             transition={{ duration: 0.2 }}
-                                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden"
+                                            className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden"
                                         >
+                                            {/* User Info */}
+                                            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                    {user?.fullName || "User"}
+                                                </p>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {user?.email || "user@example.com"}
+                                                </p>
+                                                <span className="inline-block mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                                                    {user?.role || "Participant"}
+                                                </span>
+                                            </div>
+
+                                            {/* Links */}
                                             <Link
                                                 href="/profile"
                                                 className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -118,6 +155,7 @@ export default function Navbar() {
                                             </button>
                                         </motion.div>
                                     )}
+
                                 </AnimatePresence>
                             </div>
                         )}
@@ -142,6 +180,16 @@ export default function Navbar() {
                         exit={{ height: 0 }}
                         className="md:hidden bg-white dark:bg-gray-900 px-4 py-2 space-y-2 shadow"
                     >
+                        {
+                            user?.role === "ORGANIZER" && (
+                                <Link
+                                    href="/dashboard"
+                                    className="block text-gray-700 dark:text-gray-200"
+                                >
+                                    Dashboard
+                                </Link>
+                            )
+                        }
                         <Link href="/" className="block text-gray-700 dark:text-gray-200">
                             Home
                         </Link>
@@ -152,17 +200,16 @@ export default function Navbar() {
                             Contact
                         </Link>
 
-                        <ThemeToggle />
 
                         {!isAuthenticated ? (
                             <div className="space-y-2">
                                 <Link href="/signup">
-                                    <Button variant="primary" className="w-full">
+                                    <Button variant="primary" className="w-full mb-1">
                                         Sign Up
                                     </Button>
                                 </Link>
                                 <Link href="/login">
-                                    <Button variant="secondary" className="w-full">
+                                    <Button variant="secondary" className="w-full mt-1">
                                         Login
                                     </Button>
                                 </Link>
