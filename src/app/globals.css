@@ -1,3 +1,65 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Color system (HSL for easy theming) */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --card: 0 0% 100%;
+  --border: 214 32% 91%;
+
+  /* Brand */
+  --primary: 243 75% 59%; /* indigo-600 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 152 76% 36%; /* emerald-600 */
+  --secondary-foreground: 0 0% 100%;
+
+  /* Danger */
+  --danger: 0 78% 63%; /* red-600 */
+  --danger-foreground: 0 0% 100%;
+  --danger-soft: 0 78% 93%; /* light red */
+}
+
+/* Dark mode colors */
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --card: 222.2 84% 6%;
+  --border: 217 33% 17%;
+
+  /* Brand */
+  --primary: 243 75% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 152 76% 44%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Danger */
+  --danger: 0 78% 70%; /* slightly lighter red for dark mode */
+  --danger-foreground: 0 0% 100%;
+  --danger-soft: 0 78% 35%; /* dark red soft */
+}
+
+/* Hide horizontal scrollbar cross-browser */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+html, body, :root { height: 100%; }
+
+/* Smooth transitions */
+* { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+
+/* Typography defaults */
+@layer base {
+  body { @apply bg-bg text-fg antialiased; }
+  h1 { @apply text-3xl md:text-4xl font-semibold tracking-tight; }
+  h2 { @apply text-2xl md:text-3xl font-semibold tracking-tight; }
+  h3 { @apply text-xl md:text-2xl font-semibold; }
+}
