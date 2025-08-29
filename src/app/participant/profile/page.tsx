@@ -14,11 +14,7 @@ import { setUser } from "@/store/slices/authSlice";
 import { notify } from "@/data/global";
 import { EditProfileSchema, PasswordSchema } from "@/validations/userSchema";
 import { handleApiError } from "@/lib/utils";
-import AllJoinRequests from "@/components/event/AllJoinRequests";
 
-// --------------------
-// Validation Schema
-// --------------------
 
 
 
@@ -197,10 +193,8 @@ export default function ProfilePage() {
                 transition={{ duration: 0.4 }}
                 className="lg:w-2/3 w-full bg-card shadow-md rounded-2xl p-6"
             >
-                {/* My Join Requests */}
-                <div className="mb-8">
-                    <AllJoinRequests />
-                </div>
+                
+
             </motion.div>
 
             {/* Edit Profile Modal */}

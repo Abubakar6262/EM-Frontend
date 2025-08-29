@@ -26,6 +26,9 @@ export interface EventData {
   description: string;
   startAt: string;
   endAt: string;
+  type: string;
+  joinLink: string;
+  venue: string;
 }
 
 export interface ParticipantEvent {
@@ -35,6 +38,7 @@ export interface ParticipantEvent {
   status: ParticipantStatus;
   createdAt: string;
   event: EventData;
+  user: ParticipantUser;
 }
 
 export interface PaginatedParticipantResponse {
@@ -106,5 +110,24 @@ export const participantService = {
   deleteMyRequest: async (participantId: string): Promise<Participant[]> => {
     const { data } = await api.delete(`/participant/${participantId}`);
     return data.data;
+  },
+
+  // as organizer get my requests
+  getOrganizerRequests: async (
+    page: number,
+    limit: number
+  ): Promise<PaginatedParticipantResponse> => {
+    const { data } = await api.get(`/participant/related/organizer`, {
+      params: { page, limit },
+    });
+    return data;
+  },
+
+  //  NEW: approve / reject
+  updateRequestStatus: async (
+    requestId: string,
+    status: "APPROVED" | "REJECTED"
+  ): Promise<void> => {
+    await api.put(`/participant/${requestId}/status`, { status });
   },
 };

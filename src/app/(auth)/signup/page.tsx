@@ -10,20 +10,25 @@ import { setUser } from "@/store/slices/authSlice";
 import { AppDispatch } from "@/store";
 import { authService } from "@/services/auth";
 import Link from "next/link";
-
-// Import the correct type from your service
 import type { SignupPayload } from "@/services/auth";
+import { handleApiError } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import { notify } from "@/data/global";
 
 export default function SignupPage() {
     const dispatch = useDispatch<AppDispatch>();
     const [errorMessage, setErrorMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const router = useRouter();
 
-    // ✅ Use `SignupPayload` for proper typing
-    const initialValues: SignupPayload = {
+    const initialValues: SignupPayload & { confirmPassword: string } = {
         fullName: "",
         email: "",
         password: "",
-        role: "PARTICIPANT", // default
+        confirmPassword: "",
+        role: "PARTICIPANT",
     };
 
     return (
@@ -50,13 +55,13 @@ export default function SignupPage() {
                         onSubmit={async (values, { setSubmitting }) => {
                             setErrorMessage("");
                             try {
-                                const data = await authService.signup(values);
+                                const { confirmPassword, ...signupData } = values;
+                                const data = await authService.signup(signupData);
                                 dispatch(setUser(data.user));
-                                window.location.href = "/login";
-                            } catch (err: any) {
-                                setErrorMessage(
-                                    err.response?.data?.message || "Signup failed. Please try again."
-                                );
+                                router.push("/login");
+                                notify("Signup successful! Please log in.", "success");
+                            } catch (error) {
+                                handleApiError(error);
                             } finally {
                                 setSubmitting(false);
                             }
@@ -95,15 +100,48 @@ export default function SignupPage() {
                                 </div>
 
                                 {/* Password */}
-                                <div>
+                                <div className="relative">
                                     <Field
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         name="password"
                                         placeholder="Password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+
                                     <ErrorMessage
                                         name="password"
+                                        component="p"
+                                        className="text-red-500 text-sm mt-1"
+                                    />
+                                </div>
+
+                                {/* Confirm Password */}
+                                <div className="relative">
+                                    <Field
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        name="confirmPassword"
+                                        placeholder="Confirm Password"
+                                        className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                    >
+                                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+
+                                    <ErrorMessage
+                                        name="confirmPassword"
                                         component="p"
                                         className="text-red-500 text-sm mt-1"
                                     />
@@ -144,7 +182,6 @@ export default function SignupPage() {
                                     Sign Up
                                 </Button>
 
-                                {/* ✅ Already have an account link */}
                                 <p className="text-center text-gray-600 dark:text-gray-300 text-sm">
                                     Already have an account?{" "}
                                     <Link

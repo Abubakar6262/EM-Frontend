@@ -1,13 +1,22 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 
 // Import schema + data
 import { ContactSchema } from "@/validations/ContactSchema";
 import { contactData } from "@/data/contactData";
+import Loader from "@/components/Loader";
 
 export default function ContactPage() {
+
+    if (!contactData || contactData.length === 0) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+                <Loader/>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
             {/* Hero Section */}

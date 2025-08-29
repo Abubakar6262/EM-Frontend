@@ -24,3 +24,11 @@ export function handleApiError(
 
 // Helper function for getting the initial of a name
 export const getInitial = (name: string) => name?.charAt(0).toUpperCase() || "U";
+
+
+export const formatDateTimeLocal = (dateString?: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  // Convert to local timezone and slice
+  return date.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+};

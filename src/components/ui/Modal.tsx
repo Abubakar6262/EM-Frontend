@@ -34,11 +34,11 @@ export default function Modal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div
-                className={`relative w-full ${sizeClasses[size]} mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden`}
+                className={`relative w-full ${sizeClasses[size]} mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden max-h-[80vh] flex flex-col`}
             >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                    <div className="flex justify-between items-center border-b border-border px-4 py-3">
+                    <div className="flex justify-between items-center border-b border-border px-4 py-3 shrink-0">
                         {title && (
                             <h3 className="text-lg font-semibold text-foreground">{title}</h3>
                         )}
@@ -54,11 +54,13 @@ export default function Modal({
                 )}
 
                 {/* Body */}
-                <div className="p-4">{children}</div>
+                <div className="p-4 overflow-y-auto">
+                    {children}
+                </div>
 
                 {/* Footer */}
                 {footer && (
-                    <div className="flex justify-end gap-2 border-t border-border px-4 py-3 bg-muted/40">
+                    <div className="flex justify-end gap-2 border-t border-border px-4 py-3 bg-muted/40 shrink-0">
                         {footer}
                     </div>
                 )}

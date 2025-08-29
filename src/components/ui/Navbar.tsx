@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, User, Settings, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -12,19 +12,21 @@ import { RootState } from "@/store";
 import { authService } from "@/services/auth";
 import { notify } from "@/data/global";
 import { clearUser } from "@/store/slices/authSlice";
+import { useRouter } from "next/navigation";
 // import { logout } from "@/store/slices/authSlice";
 
 export default function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const dispatch = useDispatch();
-
+    const router = useRouter();
     const user = useSelector((state: RootState) => state.auth.user);
 
     const handleLogout = async () => {
         try {
             await authService.logout(); 
             dispatch(clearUser());
+            router.push("/");
             notify("Logout successful","success");
         } catch (err) {
             console.error("Logout error:", err);
@@ -51,6 +53,14 @@ export default function Navbar() {
                                 className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
                             >
                                 Dashboard
+                            </Link>
+                        )}
+                        {user?.role === "PARTICIPANT" &&(
+                            <Link
+                                href="/participant"
+                                className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
+                            >
+                                My Requests
                             </Link>
                         )}
 
@@ -136,20 +146,20 @@ export default function Navbar() {
 
                                             {/* Links */}
                                             <Link
-                                                href="/profile"
+                                                href="participant/profile"
                                                 className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 <User className="w-4 h-4 mr-2" /> Profile
                                             </Link>
-                                            <Link
+                                            {/* <Link
                                                 href="/settings"
                                                 className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 <Settings className="w-4 h-4 mr-2" /> Settings
-                                            </Link>
+                                            </Link> */}
                                             <button
                                                 onClick={handleLogout}
-                                                className="w-full flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                className="w-full flex items-center px-4 py-2 text-red-400 dark:text-red-600 hover:bg-red-200 dark:hover:bg-red-400"
                                             >
                                                 <LogOut className="w-4 h-4 mr-2" /> Logout
                                             </button>
@@ -185,18 +195,29 @@ export default function Navbar() {
                                 <Link
                                     href="/dashboard"
                                     className="block text-gray-700 dark:text-gray-200"
+                                    onClick={() => setMobileOpen(false)}
                                 >
                                     Dashboard
                                 </Link>
                             )
                         }
-                        <Link href="/" className="block text-gray-700 dark:text-gray-200">
+                        {user?.role === "PARTICIPANT" && (
+                            <Link
+                                href="/participant"
+                                className="block text-gray-700 dark:text-gray-200"
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                My Requests
+                            </Link>
+                        )}
+
+                        <Link href="/" className="block text-gray-700 dark:text-gray-200" onClick={() => setMobileOpen(false)}>
                             Home
                         </Link>
-                        <Link href="/about" className="block text-gray-700 dark:text-gray-200">
+                        <Link href="/about" className="block text-gray-700 dark:text-gray-200" onClick={() => setMobileOpen(false)}>
                             About
                         </Link>
-                        <Link href="/contact" className="block text-gray-700 dark:text-gray-200">
+                        <Link href="/contact" className="block text-gray-700 dark:text-gray-200" onClick={() => setMobileOpen(false)}>
                             Contact
                         </Link>
 
@@ -217,20 +238,21 @@ export default function Navbar() {
                         ) : (
                             <div className="space-y-2">
                                 <Link
-                                    href="/profile"
+                                    href="/participant/profile"
                                     className="block text-gray-700 dark:text-gray-200"
+                                    onClick={() => setMobileOpen(false)}
                                 >
                                     Profile
                                 </Link>
-                                <Link
+                                {/* <Link
                                     href="/settings"
                                     className="block text-gray-700 dark:text-gray-200"
                                 >
                                     Settings
-                                </Link>
+                                </Link> */}
                                 <button
                                     onClick={handleLogout}
-                                    className="block w-full text-left text-gray-700 dark:text-gray-200"
+                                    className="block w-full text-left text-red-400 dark:text-red-600"
                                 >
                                     Logout
                                 </button>

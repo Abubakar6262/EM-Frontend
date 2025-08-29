@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+
 import EventHeader from "@/components/eventPage/EventHeader";
 import EventFilters from "@/components/eventPage/EventFilters";
 import EventList from "@/components/eventPage/EventList";
@@ -7,12 +7,11 @@ import Pagination from "@/components/ui/Pagination";
 import { motion } from "framer-motion";
 import { CalendarSearch } from "lucide-react";
 import { eventService, Event } from "@/services/event";
-import Loader from "@/components/Loader";
+import { useState, useEffect } from "react";
 
-export default function EventPage() {
+export default function DashboardEvents() {
     const [view, setView] = useState<"grid" | "list">("grid");
     const [search, setSearch] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState(""); // <-- debounced value
     const [typeFilter, setTypeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -20,34 +19,23 @@ export default function EventPage() {
     // API states
     const [events, setEvents] = useState<Event[]>([]);
     const [totalPages, setTotalPages] = useState(1);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    console.log(error)
-    // Debounce the search input
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedSearch(search);
-            setCurrentPage(1); // reset to first page on new search
-        }, 500); // wait 500ms after user stops typing
 
-        return () => clearTimeout(handler); // cleanup previous timeout
-    }, [search]);
+    console.log(error);
 
-    // Fetch events from API
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                setLoading(true);
                 setError(null);
-                const res = await eventService.getAll(
+                const res = await eventService.getMyEvents(
                     currentPage,
                     10,
                     statusFilter,
-                    debouncedSearch, // use debounced search
+                    search,
                     typeFilter
                 );
 
-                if (res.success === false || !res.data || res.data.length === 0) {
+                if (!res.success || !res.data || res.data.length === 0) {
                     setEvents([]);
                     setTotalPages(1);
                 } else {
@@ -58,18 +46,16 @@ export default function EventPage() {
                 setEvents([]);
                 if (err instanceof Error) setError(err.message);
                 else setError("Failed to load events");
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchEvents();
-    }, [currentPage, debouncedSearch, statusFilter, typeFilter]);
+    }, [currentPage, search, statusFilter, typeFilter]);
 
-    if (loading) return <Loader />;
 
     return (
-        <div className="min-h-screen p-6 space-y-8">
+
+        <div className="space-y-8 min-w-4xl">
             <EventHeader total={events.length} view={view} onToggle={setView} />
 
             <EventFilters
@@ -83,7 +69,9 @@ export default function EventPage() {
 
             {events.length > 0 ? (
                 <>
-                    <EventList events={events} view={view} />
+                    <EventList events={events} view={view} onDeleteEvent={(id) => {
+                        setEvents((prev) => prev.filter((e) => e.id !== id));
+                    }} />
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -102,12 +90,12 @@ export default function EventPage() {
                         No events found
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                        {debouncedSearch || typeFilter || statusFilter
+                        {search || typeFilter || statusFilter
                             ? "Try adjusting your search filters to find more events."
-                            : "There are currently no events scheduled. Check back later for updates!"}
+                            : "There are currently no events scheduled."}
                     </p>
                 </motion.div>
             )}
         </div>
-    );
+    )
 }

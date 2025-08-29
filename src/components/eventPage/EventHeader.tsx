@@ -1,6 +1,8 @@
 "use client";
 import Button from "@/components/ui/Button";
+import { RootState } from "@/store";
 import { Grid, List } from "lucide-react";
+import { useSelector } from "react-redux";
 
 interface EventHeaderProps {
     total: number;
@@ -9,12 +11,13 @@ interface EventHeaderProps {
 }
 
 export default function EventHeader({ total, view, onToggle }: EventHeaderProps) {
+    const user = useSelector((state: RootState) => state.auth.user);
     return (
         <div className="flex items-center justify-between">
             <div>
                 <h2 className="text-xl font-semibold">{total} Event Found</h2>
                 <p className="text-sm text-muted-foreground">
-                    Discover amazing events happening around you
+                    {user?.role !== "ORGANIZER"?"Discover amazing events happening around you":"Explore your events happening soon"}
                 </p>
             </div>
             <div className="flex gap-2">

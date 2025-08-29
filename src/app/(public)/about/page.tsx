@@ -1,4 +1,4 @@
-"use client";
+
 
 import HeroSection from "@/components/aboutPage/HeroSection";
 import MissionSection from "@/components/aboutPage/OurMission";

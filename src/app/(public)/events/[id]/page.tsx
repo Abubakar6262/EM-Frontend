@@ -112,7 +112,7 @@ export default function EventDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen p-4 md:p-6 space-y-8 max-w-7xl mx-auto">
+        <div className={`min-h-screen p-4 md:p-6 space-y-8 ${user?.role !== "ORGANIZER" ? "max-w-7xl" : "w-full"} mx-auto`}>
             {/* Header */}
             <div className="relative rounded-2xl overflow-hidden shadow-lg">
                 {event.thumbnail && (
@@ -208,6 +208,29 @@ export default function EventDetailsPage() {
                                                 <Phone className="w-4 h-4" /> {event.contactInfo}
                                             </div>
                                         )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {/* Hosts */}
+                    {event.hosts?.length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow space-y-4">
+                            <h2 className="text-xl font-semibold">Hosts</h2>
+                            <div className="space-y-3">
+                                {event.hosts.map((host,key) => (
+                                    <div
+                                        key={key}
+                                        className="flex items-center gap-3 p-4 border rounded-lg dark:border-gray-700"
+                                    >
+                                        {/* Avatar with first letter */}
+                                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold">
+                                            {host.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">{host.name}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{host.email}</p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

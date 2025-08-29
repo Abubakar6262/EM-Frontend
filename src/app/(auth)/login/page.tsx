@@ -11,12 +11,16 @@ import { AppDispatch } from "@/store";
 import Link from "next/link";
 import { LoginSchema } from "@/validations/authSchema";
 import { handleApiError } from "@/lib/utils";
-import { useRouter } from "next/navigation"; // ✅ correct import
+import { useRouter } from "next/navigation"; 
+import { notify } from "@/data/global";
+import { Eye, EyeOff } from "lucide-react";
+
 
 export default function LoginPage() {
     const dispatch = useDispatch<AppDispatch>();
     const [errorMessage, setErrorMessage] = useState("");
     const initialValues = { email: "", password: "" };
+    const [showPassword, setShowPassword] = useState(false);
 
     const router = useRouter();
 
@@ -62,8 +66,9 @@ export default function LoginPage() {
                                 } else {
                                     router.replace("/");
                                 }
-                            } catch (err) {
-                                handleApiError(err);
+                                notify("Login successful!", "success");
+                            } catch (error) {
+                                handleApiError(error);
                             } finally {
                                 setSubmitting(false);
                             }
@@ -87,27 +92,38 @@ export default function LoginPage() {
                                 </div>
 
                                 {/* Password */}
-                                <div>
+                                <div className="relative w-full">
                                     <Field
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         name="password"
                                         placeholder="Password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 
+                   bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+                   focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
+
+                                    {/* Toggle button */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+
                                     <ErrorMessage
                                         name="password"
                                         component="p"
                                         className="text-red-500 text-sm mt-1"
                                     />
-                                    {/* Forgot Password Link */}
-                                    <div className="text-right mt-2">
-                                        <Link
-                                            href="/forgot-password"
-                                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                                        >
-                                            Forgot Password?
-                                        </Link>
-                                    </div>
+                                </div>
+                                <div className="text-right mt-0 mb-2"> 
+                                    <Link
+                                        href="/forgot-password"
+                                        className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                                    >
+                                        Forgot Password?
+                                    </Link>
                                 </div>
 
                                 <Button

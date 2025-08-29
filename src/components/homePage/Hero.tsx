@@ -5,7 +5,11 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 import Image from "next/image";
 import Banner from "@/assets/images/Hero.png";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 export default function Hero() {
+    const user = useSelector((state: RootState) => state.auth.user);
+
     return (
         <section className="relative bg-gradient-to-r from-indigo-600 to-emerald-500 text-white py-24">
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
@@ -23,9 +27,11 @@ export default function Hero() {
                         A modern event management platform for organizers and participants.
                     </p>
                     <div className="mt-6 flex gap-4">
-                        <Link href="/signup">
-                            <Button variant="primary" size="lg">Get Started</Button>
-                        </Link>
+                        {
+                            !user && <Link href="/signup">
+                                <Button variant="primary" size="lg">Get Started</Button>
+                            </Link>
+                        }
                         <Link href="/about">
                             <Button variant="secondary" size="lg">Learn More</Button>
                         </Link>

@@ -1,14 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, CalendarPlus, List, LogOut } from "lucide-react";
+import { X, CalendarPlus, List, LogOut, User, ListChecks, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { useEffect, useState } from "react";
 import ThemeToggle from "../ui/ThemeToggle";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { truncateText } from "@/lib/truncateText";
+import { handleApiError } from "@/lib/utils";
+import { notify } from "@/data/global";
+import { authService } from "@/services/auth";
+import { clearUser } from "@/store/slices/authSlice";
 
 type SidebarProps = {
     open: boolean;
@@ -18,6 +22,7 @@ type SidebarProps = {
 export default function Sidebar({ open, onClose }: SidebarProps) {
     const [isDesktop, setIsDesktop] = useState(false);
     const user = useSelector((state: RootState) => state.auth.user);
+    const dispatch = useDispatch();
 
     // Track screen size
     useEffect(() => {
@@ -27,9 +32,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+
+    const handleLogout = async () => {
+        try {
+            await authService.logout();
+             dispatch(clearUser());
+            notify("Logged out successfully", "success");
+        } catch (error) {
+           handleApiError(error);
+        }
+    };
+
     const sidebarItems = [
+        { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
         { label: "Create Event", icon: CalendarPlus, href: "/dashboard/create-event" },
-        { label: "My Events", icon: List, href: "/dashboard/events" },
+        { label: "My Events", icon: List, href: "/dashboard/my-events" },
+        { label: "Manage Requests", icon: ListChecks, href: "/dashboard/manage-requests" },
     ];
 
     return (
@@ -57,7 +75,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         <Button
                             variant="primary"
                             size="md"
-                            className="w-full justify-start gap-2"
+                            align="start" 
+                            className="w-full gap-2"
                         >
                             <item.icon className="h-5 w-5" />
                             {item.label}
@@ -71,7 +90,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <span className=" md:hidden">
                     <ThemeToggle />
                 </span>
-                <Button variant="danger" size="md" className="w-full gap-2">
+                <Link href="/dashboard/profile">
+                    <Button variant="primary"
+                        size="md"
+                        align="start"
+                        className="w-full gap-2">
+                        <User className="h-5 w-5" /> Profile
+                    </Button>
+                </Link>
+                <Button variant="danger"
+                    size="md"
+                    align="start"
+                    className="w-full gap-2"
+                     onClick={handleLogout}>
                     <LogOut className="h-5 w-5" /> Logout
                 </Button>
             </div>

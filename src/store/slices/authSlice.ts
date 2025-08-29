@@ -25,7 +25,7 @@ export interface AuthState {
 // --------------------
 const initialState: AuthState = {
   user: null,
-  loading: false,
+  loading: true,
 };
 
 // --------------------
@@ -45,9 +45,11 @@ const authSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<User | null>) => {
       state.user = action.payload;
+      state.loading = false;
     },
     clearUser: (state) => {
       state.user = null;
+      state.loading = false;
     },
   },
   extraReducers: (builder) => {

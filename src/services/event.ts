@@ -13,10 +13,14 @@ export interface Organizer {
   role?: string; // optional if not always provided
 }
 
+// export interface Host {
+//   id: string;
+//   fullName: string;
+//   role?: string;
+// }
 export interface Host {
-  id: string;
-  fullName: string;
-  role?: string;
+  name: string;
+  email: string;
 }
 
 export interface Attachment {
@@ -48,6 +52,7 @@ export interface Event {
   hosts: Host[];
   organizers: Organizer[];
   attachments: Attachment[];
+  totalSeats?: number;
 }
 
 export interface PaginatedEventsResponse {
@@ -133,6 +138,61 @@ export const eventService = {
     return data;
   },
 
+  update: async (id: string, payload: EventFormValues) => {
+    const formData = new FormData();
+
+    // Required fields
+    formData.append("title", payload.title);
+    formData.append("description", payload.description);
+    formData.append("type", payload.type);
+    formData.append("startAt", payload.startAt);
+    formData.append("endAt", payload.endAt);
+    formData.append("contactInfo", payload.contactInfo);
+
+    // Conditional fields
+    if (payload.venue) {
+      formData.append("venue", payload.venue);
+    }
+    if (payload.joinLink) {
+      formData.append("joinLink", payload.joinLink);
+    }
+
+    // Hosts
+    if (payload.hosts && payload.hosts.length > 0) {
+      formData.append("hosts", JSON.stringify(payload.hosts));
+    }
+
+    // totalSeats
+    if (payload.limitedSeats && payload.totalSeats) {
+      formData.append("totalSeats", String(payload.totalSeats));
+    } else {
+      formData.append("totalSeats", ""); // send empty if not limited
+    }
+
+    // folder
+    if (payload.folder) {
+      formData.append("folder", payload.folder);
+    }
+
+    // Files (thumbnail is optional in update)
+    if (payload.thumbnail) {
+      formData.append("thumbnail", payload.thumbnail);
+    }
+
+    if (payload.media && payload.media.length > 0) {
+      payload.media.forEach((file) => {
+        formData.append("media", file);
+      });
+    }
+
+    // API call
+    const { data } = await api.put(`/events/update/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return data;
+  },
+
   getAll: async (
     page: number = 1,
     limit: number = 10,
@@ -146,8 +206,25 @@ export const eventService = {
     return data;
   },
 
+  getMyEvents: async (
+    page: number = 1,
+    limit: number = 10,
+    filterBy?: string,
+    search?: string,
+    type?: string
+  ): Promise<PaginatedEventsResponse> => {
+    const { data } = await api.get("/events/my-events", {
+      params: { page, limit, filterBy, search, type },
+    });
+    return data;
+  },
+
   getById: async (id: string): Promise<Event> => {
     const { data } = await api.get(`/events/${id}`);
     return data.data;
   },
+
+  deleteEvent: async (id: string): Promise<void> => {
+    await api.delete(`/events/delete/${id}`);
+  }
 };

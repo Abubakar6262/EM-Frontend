@@ -20,7 +20,7 @@ export default function ValuesSection() {
 
     return (
         <section className="bg-white dark:bg-gray-800 py-16">
-            <div className="max-w-6xl mx-auto px-6 text-center">
+            <div className="max-w-6xl mx-auto text-center">
                 <h2 className="text-3xl font-bold mb-12">Our Values</h2>
                 <div className="grid gap-8 md:grid-cols-3">
                     {values.map((val, i) => (

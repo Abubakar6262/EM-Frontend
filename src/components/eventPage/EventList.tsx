@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import EventCard from "./EventCard";
-import { Event } from "@/services/event"; // ✅ reuse the shared Event type
+import { Event } from "@/services/event"; 
 
 interface EventListProps {
     events: Event[];
     view: "grid" | "list";
+    onDeleteEvent?: (id: string) => void;
 }
 
-export default function EventList({ events, view }: EventListProps) {
+export default function EventList({ events, view, onDeleteEvent }: EventListProps) {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -34,7 +35,7 @@ export default function EventList({ events, view }: EventListProps) {
             }
         >
             {events.map((event, i) => (
-                <EventCard key={event.id} event={event} view={activeView} index={i} />
+                <EventCard key={event.id} event={event} view={activeView} index={i} onDeleteEvent={onDeleteEvent} />
             ))}
         </div>
     );

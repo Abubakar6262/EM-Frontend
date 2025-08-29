@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Trash2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { truncateText } from "@/lib/truncateText";
-import { Event, eventService } from "@/services/event";
+import { Event, eventService, Host } from "@/services/event";
 import { participantService } from "@/services/participant";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -14,17 +14,23 @@ import { notify } from "@/data/global";
 
 // custom Modal
 import Modal from "@/components/ui/Modal";
+import { useRouter } from "next/navigation";
+import EventForm from "../event/EventForm";
+import { formatDateTimeLocal, handleApiError } from "@/lib/utils";
 
 export default function EventCard({
     event,
     view,
     index,
+    onDeleteEvent,
 }: {
     event: Event;
     view: "grid" | "list";
     index: number;
+        onDeleteEvent?: (id: string) => void;
 }) {
     const user = useSelector((state: RootState) => state.auth.user);
+    const router = useRouter();
 
     // Track participant status
     const [participantStatus, setParticipantStatus] = useState<"NONE" | "PENDING" | "APPROVED">("NONE");
@@ -32,6 +38,8 @@ export default function EventCard({
 
     // modal state
     const [openModal, setOpenModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false)
+    const [openDeleteModal, setOpenDeleteModal] = useState(false)
 
     // Check participant status on mount
     useEffect(() => {
@@ -114,6 +122,17 @@ export default function EventCard({
 
     const eventStatus = getEventStatus();
 
+    const handleDelete = async () => {
+        try {
+            await eventService.deleteEvent(event.id);
+            notify("Event deleted successfully", "success");
+            setOpenDeleteModal(false);
+            if (onDeleteEvent) onDeleteEvent(event.id);
+        } catch (error) {
+            handleApiError(error);
+        }
+    };
+
     return (
         <>
             <motion.div
@@ -132,14 +151,21 @@ export default function EventCard({
                         alt={event.title}
                         className={
                             view === "list"
-                                ? "h-full w-full object-cover"
+                                ? "w-full object-cover max-h-[300px]"
                                 : "w-full h-40 object-cover"
                         }
                         width={400}
                         height={200}
                     />
 
-                    {/* Badges Container - Top Right */}
+                    {/* Badges Container - Top Left */}
+                   {user?.role === "ORGANIZER" &&
+                        <div className="absolute top-2 left-2 flex gap-2" title="Delete Event" aria-label="Delete Event" onClick={() => setOpenDeleteModal(true)}>
+                            <span className="bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200 p-1 rounded-full hover:bg-red-200 hover:dark:bg-red-800 transition">
+                                <Trash2 className="w-6 h-6 text-red-500 cursor-pointer" />
+                            </span>
+                        </div>
+                   }
                     <div className="absolute top-2 right-2 flex gap-2">
                         {/* Event Status Badge */}
                         <span
@@ -186,15 +212,25 @@ export default function EventCard({
                     )}
 
                     {/* Buttons */}
-                    <div className={`mt-4 ${view === "list" ? "flex gap-3" : ""}`}>
+                    <div className={`mt-4 ${view === "list" || user?.role === "ORGANIZER" ? "flex gap-3" : ""}`}>
                         <Button
-                            onClick={() => (window.location.href = `/events/${event.id}`)}
+                            onClick={user?.role !== "ORGANIZER" ? () => (router.push(`/events/${event.id}`)) : () => (router.push(`my-events/${event.id}`))}
                             variant="primary"
                             size="md"
                             className={view === "list" ? "flex-1" : "w-full"}
                         >
                             View Details
                         </Button>
+                        {user?.role === "ORGANIZER" && (
+                            <Button
+                                onClick={() => setOpenEditModal(true)}
+                                variant="secondary"
+                                size="md"
+                                className={view === "list" ? "flex-1" : "w-full"}
+                            >
+                                Edit Event
+                            </Button>
+                        )}
                         {view === "list" && user?.role !== "ORGANIZER" && (
                             <Button
                                 onClick={() => user ? setOpenModal(true) : window.location.href = '/login'}
@@ -234,6 +270,77 @@ export default function EventCard({
                 <p>
                     Are you sure you want to join{" "}
                     <span className="font-semibold">{event.title}</span>?
+                </p>
+            </Modal>
+
+            {/* Edit Modal */}
+            <Modal
+                isOpen={openEditModal}
+                onClose={() => setOpenEditModal(false)}
+                title="Edit Event"
+                size="xl"
+            >
+                <EventForm
+                    initialValues={{
+                        title: event.title ?? "",
+                        description: event.description ?? "",
+                        hosts: Array.isArray(event.hosts)
+                            ? event.hosts.map((host: Host) => ({
+                                name: host.name ?? "",
+                                email: host.email ?? "",
+                            }))
+                            : [{ name: "", email: "" }],
+                        type:
+                            event.type === "ONLINE" || event.type === "ONSITE"
+                                ? event.type
+                                : "ONSITE",
+                        venue: event.venue ?? "",
+                        joinLink: event.joinLink ?? "",
+                        limitedSeats: !!event.totalSeats,
+                        totalSeats: event.totalSeats ? String(event.totalSeats) : "",
+                        startAt: formatDateTimeLocal(event.startAt),
+                        endAt: formatDateTimeLocal(event.endAt),
+                        contactInfo: event.contactInfo ?? "",
+                        folder: "XYZ",
+                        thumbnail: null,
+                        media: [],
+                    }}
+                    onSubmit={async (values) => {
+                        await eventService.update(event.id, values);
+                        // notify("Event updated successfully", "success");
+                        
+                        setOpenEditModal(false);
+                    }}
+                    submitLabel="Update Event"
+                    onCancel={() => setOpenEditModal(false)}
+                />
+            </Modal>
+
+            {/* Confirmation delete event Modal */}
+            <Modal
+                isOpen={openDeleteModal}
+                onClose={() => setOpenDeleteModal(false)}
+                title="Confirm Delete"
+                footer={
+                    <>
+                        <Button
+                            variant="warning"
+                            onClick={() => setOpenDeleteModal(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={handleDelete}
+                        >
+                            Confirm
+                        </Button>
+                    </>
+                }
+            >
+                <p className="text-gray-700 dark:text-gray-300">
+                    Are you sure you want to delete the event{" "}
+                    <span className="font-semibold">{event?.title}</span>?
                 </p>
             </Modal>
         </>

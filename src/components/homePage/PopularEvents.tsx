@@ -4,12 +4,41 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Calendar, MapPin } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { popularEvents } from "@/data/popularEvents";
 import { truncateText } from "@/lib/truncateText";
-
-
+import { useEffect, useState } from "react";
+import { handleApiError } from "@/lib/utils";
+import { Event, eventService } from "@/services/event";
+import Link from "next/link";
+import Loader from "../Loader";
 
 export default function PopularEvents() {
+    const [events, setEvents] = useState<Event[]>([]); // store fetched events
+    const [loading, setLoading] = useState(true);
+
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const res = await eventService.getAll(); // call your service
+                const topEvents = res.data
+                    .sort((a, b) => (b.participants?.length ?? 0) - (a.participants?.length ?? 0))
+                    .slice(0, 4);
+                setEvents(topEvents);
+                console.log("events ", topEvents);
+            } catch (err: unknown) {
+                handleApiError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvents();
+    }, []);
+
+    if (loading) {
+        return <div className="text-center py-10"> <Loader/></div>;
+    }
+
     return (
         <section className="max-w-7xl mx-auto px-6 py-16">
             {/* Section Title */}
@@ -25,11 +54,20 @@ export default function PopularEvents() {
 
             {/* Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {popularEvents.map((event, i) => (
+                {events.map((event, i) => (
                     <motion.div
                         key={event.id}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
+                        whileHover={{
+                            scale: 1.05,            // slightly bigger
+                            y: -5,                  // lift it up a little
+                            transition: {
+                                type: "spring",       // spring for bouncing effect
+                                stiffness: 300,
+                                damping: 20,
+                            },
+                        }}
                         transition={{ duration: 0.5, delay: i * 0.1 }}
                         viewport={{ once: true }}
                         className="bg-white dark:bg-gray-800 rounded-2xl shadow hover:shadow-lg transition overflow-hidden flex flex-col"
@@ -43,9 +81,7 @@ export default function PopularEvents() {
                         />
 
                         <div className="p-5 flex flex-col flex-1">
-                            <h3 className="font-semibold text-lg line-clamp-1">
-                                {event.title}
-                            </h3>
+                            <h3 className="font-semibold text-lg line-clamp-1">{event.title}</h3>
 
                             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 flex-1">
                                 {truncateText(event.description, 20)}
@@ -65,12 +101,15 @@ export default function PopularEvents() {
                             )}
 
                             <div className="mt-4">
-                                <Button variant="primary" size="md" className="w-full">
-                                    View Details
-                                </Button>
+                                <Link href={`/events/${event.id}`}>
+                                    <Button variant="primary" size="md" className="w-full">
+                                        View Details
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     </motion.div>
+
                 ))}
             </div>
         </section>
