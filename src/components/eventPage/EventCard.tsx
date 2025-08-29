@@ -17,17 +17,20 @@ import Modal from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import EventForm from "../event/EventForm";
 import { formatDateTimeLocal, handleApiError } from "@/lib/utils";
+import ThankYouModal from "../ui/ThankYouModal";
 
 export default function EventCard({
     event,
     view,
     index,
     onDeleteEvent,
+    onEventUpdated,
 }: {
     event: Event;
     view: "grid" | "list";
     index: number;
-        onDeleteEvent?: (id: string) => void;
+    onDeleteEvent?: (id: string) => void;
+    onEventUpdated?: () => void;
 }) {
     const user = useSelector((state: RootState) => state.auth.user);
     const router = useRouter();
@@ -40,6 +43,9 @@ export default function EventCard({
     const [openModal, setOpenModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false)
     const [openDeleteModal, setOpenDeleteModal] = useState(false)
+    const [openThankYouModal, setOpenThankYouModal] = useState(false);
+
+
 
     // Check participant status on mount
     useEffect(() => {
@@ -68,7 +74,7 @@ export default function EventCard({
             } else if (participant) {
                 setParticipantStatus("APPROVED");
             }
-
+            setOpenThankYouModal(true);
             setOpenModal(false);
             notify("Request has been sent", "success");
         } catch (err) {
@@ -88,6 +94,14 @@ export default function EventCard({
         disabled = true;
     } else if (participantStatus === "APPROVED") {
         joinLabel = "Joined";
+        disabled = true;
+    }
+    // Extra conditions: event is past OR seats are full
+    if (new Date(event.endAt) < new Date()) {
+        joinLabel = "Event Ended";
+        disabled = true;
+    } else if (event.totalSeats && event.confirmedCount >= event.totalSeats) {
+        joinLabel = "Seats Full";
         disabled = true;
     }
 
@@ -133,6 +147,7 @@ export default function EventCard({
         }
     };
 
+
     return (
         <>
             <motion.div
@@ -159,13 +174,13 @@ export default function EventCard({
                     />
 
                     {/* Badges Container - Top Left */}
-                   {user?.role === "ORGANIZER" &&
+                    {user?.role === "ORGANIZER" &&
                         <div className="absolute top-2 left-2 flex gap-2" title="Delete Event" aria-label="Delete Event" onClick={() => setOpenDeleteModal(true)}>
                             <span className="bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200 p-1 rounded-full hover:bg-red-200 hover:dark:bg-red-800 transition">
                                 <Trash2 className="w-6 h-6 text-red-500 cursor-pointer" />
                             </span>
                         </div>
-                   }
+                    }
                     <div className="absolute top-2 right-2 flex gap-2">
                         {/* Event Status Badge */}
                         <span
@@ -197,6 +212,28 @@ export default function EventCard({
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 flex-1">
                         {truncateText(event.description, view === "list" ? 50 : 20)}
                     </p>
+                    {/* Seat Availability Slider */}
+                    {event.totalSeats && event.totalSeats >= 1 && (
+                        <div className="mt-4">
+                            <div className="flex justify-between text-sm mb-1">
+                                <span className="text-gray-600 dark:text-gray-300">
+                                    Seats Filled
+                                </span>
+                                <span className="font-medium text-gray-800 dark:text-gray-100">
+                                    {event.confirmedCount} / {event.totalSeats}
+                                </span>
+                            </div>
+
+                            <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <motion.div
+                                    className="h-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(event.confirmedCount / event.totalSeats) * 100}%` }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
                         <Calendar className="w-4 h-4" />
@@ -233,7 +270,7 @@ export default function EventCard({
                         )}
                         {view === "list" && user?.role !== "ORGANIZER" && (
                             <Button
-                                onClick={() => user ? setOpenModal(true) : window.location.href = '/login'}
+                                onClick={() => user ? setOpenModal(true) : router.push('/login')}
                                 variant="secondary"
                                 size="md"
                                 disabled={disabled}
@@ -304,11 +341,13 @@ export default function EventCard({
                         folder: "XYZ",
                         thumbnail: null,
                         media: [],
+                        attachments: event.attachments ?? [],
                     }}
                     onSubmit={async (values) => {
                         await eventService.update(event.id, values);
-                        // notify("Event updated successfully", "success");
-                        
+                        if (onEventUpdated) {
+                            onEventUpdated();
+                        }
                         setOpenEditModal(false);
                     }}
                     submitLabel="Update Event"
@@ -343,6 +382,12 @@ export default function EventCard({
                     <span className="font-semibold">{event?.title}</span>?
                 </p>
             </Modal>
+
+            <ThankYouModal
+                isOpen={openThankYouModal}
+                onClose={() => setOpenThankYouModal(false)}
+                message={`Your request to join ${event.title} has been sent.`}
+            />
         </>
     );
 }

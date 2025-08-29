@@ -53,6 +53,7 @@ export interface Event {
   organizers: Organizer[];
   attachments: Attachment[];
   totalSeats?: number;
+  confirmedCount: number;
 }
 
 export interface PaginatedEventsResponse {
@@ -114,7 +115,7 @@ export const eventService = {
 
     // folder (for cloud storage path)
     if (payload.folder) {
-      formData.append("folder", payload.folder);
+      formData.append("folder", payload.folder || "Event_Management/Event");
     }
 
     //  Files
@@ -171,7 +172,7 @@ export const eventService = {
 
     // folder
     if (payload.folder) {
-      formData.append("folder", payload.folder);
+      formData.append("folder", payload.folder || "Event_Management/Event");
     }
 
     // Files (thumbnail is optional in update)
@@ -226,5 +227,9 @@ export const eventService = {
 
   deleteEvent: async (id: string): Promise<void> => {
     await api.delete(`/events/delete/${id}`);
+  },
+
+  deleteAttachment: async (attachmentId: string): Promise<void> => {
+    await api.delete(`/events/delete-attachment/${attachmentId}`);
   }
 };

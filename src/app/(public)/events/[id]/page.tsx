@@ -111,6 +111,19 @@ export default function EventDetailsPage() {
         disabled = true;
     }
 
+    // Extra conditions
+    const now = new Date();
+    if (new Date(event.endAt) < now) {
+        joinLabel = "Event Ended";
+        disabled = true;
+    } else if (
+        event.totalSeats &&
+        event.confirmedCount >= event.totalSeats
+    ) {
+        joinLabel = "Seats Full";
+        disabled = true;
+    }
+
     return (
         <div className={`min-h-screen p-4 md:p-6 space-y-8 ${user?.role !== "ORGANIZER" ? "max-w-7xl" : "w-full"} mx-auto`}>
             {/* Header */}

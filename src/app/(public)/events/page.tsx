@@ -12,7 +12,7 @@ import Loader from "@/components/Loader";
 export default function EventPage() {
     const [view, setView] = useState<"grid" | "list">("grid");
     const [search, setSearch] = useState("");
-    const [debouncedSearch, setDebouncedSearch] = useState(""); // <-- debounced value
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -43,7 +43,7 @@ export default function EventPage() {
                     currentPage,
                     10,
                     statusFilter,
-                    debouncedSearch, // use debounced search
+                    debouncedSearch, 
                     typeFilter
                 );
 

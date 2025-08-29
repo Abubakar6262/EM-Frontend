@@ -335,7 +335,7 @@
 // }
 
 "use client";
-import { eventService } from "@/services/event";
+import { Attachment, eventService } from "@/services/event";
 // import { notify } from "@/data/global";
 import EventForm from "@/components/event/EventForm";
 
@@ -359,6 +359,7 @@ export interface EventFormValues {
     folder: string;
     thumbnail: File | null;
     media: File[];
+    attachments?: Attachment[];    
 }
 
 export default function CreateEventPage() {

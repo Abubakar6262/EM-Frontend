@@ -13,6 +13,7 @@ import { handleApiError } from "@/lib/utils";
 import { notify } from "@/data/global";
 import { authService } from "@/services/auth";
 import { clearUser } from "@/store/slices/authSlice";
+import { usePathname } from "next/navigation";
 
 type SidebarProps = {
     open: boolean;
@@ -23,6 +24,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     const [isDesktop, setIsDesktop] = useState(false);
     const user = useSelector((state: RootState) => state.auth.user);
     const dispatch = useDispatch();
+    const pathname = usePathname();
 
     // Track screen size
     useEffect(() => {
@@ -73,7 +75,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 {sidebarItems.map((item) => (
                     <Link key={item.label} href={item.href}>
                         <Button
-                            variant="primary"
+                            variant={pathname === item.href ? "primary" : "ghost"}
                             size="md"
                             align="start" 
                             className="w-full gap-2"
@@ -91,7 +93,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <ThemeToggle />
                 </span>
                 <Link href="/dashboard/profile">
-                    <Button variant="primary"
+                    <Button variant={pathname === "/dashboard/profile" ? "primary" : "ghost"}
                         size="md"
                         align="start"
                         className="w-full gap-2">

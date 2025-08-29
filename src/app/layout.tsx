@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body>
 
-        
+
         <Providers>
           {/* only wraps children, no navbar/footer */}
           <div className="min-h-screen flex flex-col">
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
           </div>
         </Providers>
-      
+        
       </body>
     </html>
   );
