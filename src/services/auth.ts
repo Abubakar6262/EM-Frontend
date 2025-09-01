@@ -1,4 +1,5 @@
 // services/auth.ts
+import { u } from "framer-motion/client";
 import { api } from "./api";
 
 export type SignupPayload = {
@@ -7,13 +8,34 @@ export type SignupPayload = {
   password: string;
   role: "ADMIN" | "ORGANIZER" | "PARTICIPANT";
 };
-
+export interface UserProfileValues {
+  fullName: string;
+  email: string;
+  role: string;
+}
 export type LoginPayload = {
   email: string;
   password: string;
 };
 
-type ForgotPasswordPayload = { email: string };
+export type ForgotPasswordPayload = { email: string };
+
+// === New Interfaces for getMyUsers ===
+export interface UserItem {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  role: "ADMIN" | "ORGANIZER" | "PARTICIPANT";
+}
+
+export interface GetMyUsers {
+  success: boolean;
+  users: UserItem[];
+  totalUsers: number;
+  totalPages: number;
+  currentPage: number;
+}
 
 export const authService = {
   signup: async (payload: SignupPayload) => {
@@ -73,5 +95,41 @@ export const authService = {
   }) => {
     const { data } = await api.put("/user/update-password", payload);
     return data;
+  },
+
+  // getMyUsers service
+  getMyUsers: async (
+    page = 1,
+    limit = 10,
+    search?: string
+  ): Promise<GetMyUsers> => {
+    const { data } = await api.get("/user/created-by-me", {
+      params: { page, limit, search },
+    });
+    return data;
+  },
+
+  // createUser service
+  createUser: async (payload: UserProfileValues): Promise<UserItem> => {
+    const { data } = await api.post("/auth/create-user", payload);
+    return data;
+  },
+
+  // Update user role
+
+  updateRole: async (userId: string, role: string): Promise<UserItem> => {
+    const { data } = await api.put(`/user/update-user-role`, {
+      role,
+      user: {
+        id: userId,
+      },
+    });
+    return data;
+  },
+
+  // Delete user
+  deleteUser: async (userId: string): Promise<void> => {
+    await api.delete(`/user/delete-user/${userId}`);
+    
   },
 };

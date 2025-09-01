@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, CalendarPlus, List, LogOut, User, ListChecks, LayoutDashboard } from "lucide-react";
+import { X, CalendarPlus, List, LogOut, User, ListChecks, LayoutDashboard, Users } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { useEffect, useState } from "react";
@@ -50,6 +50,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         { label: "Create Event", icon: CalendarPlus, href: "/dashboard/create-event" },
         { label: "My Events", icon: List, href: "/dashboard/my-events" },
         { label: "Manage Requests", icon: ListChecks, href: "/dashboard/manage-requests" },
+        { label: "Manage Users", icon: Users, href: "/dashboard/manage-user" },
     ];
 
     return (

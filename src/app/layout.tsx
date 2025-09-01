@@ -5,6 +5,8 @@ import "./globals.css";
 import "@/data/global"; // for window.notify
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css";
+
 
 export const metadata: Metadata = {
   title: "EventHub",

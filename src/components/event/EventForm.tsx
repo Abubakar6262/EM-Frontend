@@ -12,6 +12,7 @@ import Image from "next/image";
 import { Attachment, eventService } from "@/services/event";
 import { Trash2 } from "lucide-react";
 import Modal from "../ui/Modal";
+import { useRouter } from "next/navigation";
 
 interface EventFormProps {
     initialValues: EventFormValues;
@@ -30,6 +31,7 @@ export default function EventForm({
         initialValues.attachments || []
     );
     const [openDeleteModal, setOpenDeleteModal] = useState<number | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         setAttachments(initialValues.attachments || []);
@@ -57,6 +59,7 @@ export default function EventForm({
                         );
                         if (submitLabel === "Create Event") {
                             resetForm();
+                            router.push("/dashboard/my-events");
                         }
                     } catch (error) {
                         handleApiError(error);
@@ -281,27 +284,40 @@ export default function EventForm({
                             <div>
                                 <label className="block mb-2 font-medium">Attachments</label>
                                 <div className="flex flex-wrap gap-4">
-                                    {attachments.map((att: Attachment, index: number) => (
-                                        <div
-                                            key={index}
-                                            className="relative w-[200px] h-[200px] rounded-lg overflow-hidden border dark:border-gray-700"
-                                        >
-                                            <Image
-                                                src={att.url}
-                                                alt={`Attachment ${index + 1}`}
-                                                className="w-full h-full object-cover"
-                                                width={200}
-                                                height={200}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow"
-                                                onClick={() => setOpenDeleteModal(index)}
+                                    {attachments.map((att: Attachment, index: number) => {
+                                        const isVideo = att.url.match(/\.(mp4|webm|ogg)$/i);
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="relative w-[200px] h-[200px] rounded-lg overflow-hidden border dark:border-gray-700"
                                             >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ))}
+                                                {isVideo ? (
+                                                    <video
+                                                        src={att.url}
+                                                        controls
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={att.url}
+                                                        alt={`Attachment ${index + 1}`}
+                                                        className="w-full h-full object-cover"
+                                                        width={200}
+                                                        height={200}
+                                                    />
+                                                )}
+
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow"
+                                                    onClick={() => setOpenDeleteModal(index)}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

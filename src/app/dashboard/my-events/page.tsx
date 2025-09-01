@@ -8,12 +8,15 @@ import { motion } from "framer-motion";
 import { CalendarSearch } from "lucide-react";
 import { eventService, Event } from "@/services/event";
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function DashboardEvents() {
+    const searchParams = useSearchParams();
+
     const [view, setView] = useState<"grid" | "list">("grid");
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "");
     const [currentPage, setCurrentPage] = useState(1);
 
     // API states
@@ -74,7 +77,7 @@ export default function DashboardEvents() {
             />
 
             {loading ? (
-                // 🔄 Loader UI
+                //  Loader UI
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -91,7 +94,7 @@ export default function DashboardEvents() {
                         onDeleteEvent={(id) => {
                             setEvents((prev) => prev.filter((e) => e.id !== id));
                         }}
-                        onRefresh={fetchEvents} // ✅ can pass now
+                        onRefresh={fetchEvents} 
                     />
                     <Pagination
                         currentPage={currentPage}

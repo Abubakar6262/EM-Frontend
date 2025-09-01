@@ -344,6 +344,7 @@ export default function EventCard({
                         attachments: event.attachments ?? [],
                     }}
                     onSubmit={async (values) => {
+                        
                         await eventService.update(event.id, values);
                         if (onEventUpdated) {
                             onEventUpdated();

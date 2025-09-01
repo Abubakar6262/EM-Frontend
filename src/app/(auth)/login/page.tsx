@@ -49,7 +49,6 @@ export default function LoginPage() {
                             setErrorMessage("");
                             try {
                                 const data = await authService.login(values);
-                                console.log("Login response:", data);
 
                                 if (!data.success) {
                                     setErrorMessage(data.message || "Login failed");

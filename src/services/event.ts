@@ -79,6 +79,29 @@ export type CreateEventPayload = {
   startAt: string;
   endAt: string;
 };
+export interface AdminDashboardData {
+  totalEvents: number;
+  incomingEvents: number;
+  pastEvents: number;
+  ongoingEvents: number;
+  cancelledEvents: number;
+  totalParticipants: number;
+  averageSeatsFilled: number;
+  mostPopularEvent: {
+    id: string;
+    title: string;
+    participantsCount: number;
+  } | null; // in case no popular event exists
+  pendingJoinRequests: number;
+  approvalRate: number;
+  onlineVsOnsite: {
+    ONLINE: number;
+    ONSITE: number;
+  };
+  eventsLast30Days: {
+    [date: string]: number; // dynamic dates with event counts
+  };
+}
 
 // --------------------
 // Service
@@ -151,15 +174,11 @@ export const eventService = {
     formData.append("contactInfo", payload.contactInfo);
 
     // Conditional fields
-    if (payload.venue) {
-      formData.append("venue", payload.venue);
-    }
-    if (payload.joinLink) {
-      formData.append("joinLink", payload.joinLink);
-    }
+    if (payload.venue) formData.append("venue", payload.venue);
+    if (payload.joinLink) formData.append("joinLink", payload.joinLink);
 
     // Hosts
-    if (payload.hosts && payload.hosts.length > 0) {
+    if (payload.hosts?.length) {
       formData.append("hosts", JSON.stringify(payload.hosts));
     }
 
@@ -167,20 +186,19 @@ export const eventService = {
     if (payload.limitedSeats && payload.totalSeats) {
       formData.append("totalSeats", String(payload.totalSeats));
     } else {
-      formData.append("totalSeats", ""); // send empty if not limited
+      formData.append("totalSeats", "");
     }
 
     // folder
-    if (payload.folder) {
-      formData.append("folder", payload.folder || "Event_Management/Event");
-    }
+    formData.append("folder", payload.folder || "Event_Management/Event");
 
-    // Files (thumbnail is optional in update)
-    if (payload.thumbnail) {
+    // Thumbnail (only append if new file chosen)
+    if (payload.thumbnail instanceof File) {
       formData.append("thumbnail", payload.thumbnail);
     }
 
-    if (payload.media && payload.media.length > 0) {
+    // Media
+    if (payload.media?.length) {
       payload.media.forEach((file) => {
         formData.append("media", file);
       });
@@ -231,5 +249,10 @@ export const eventService = {
 
   deleteAttachment: async (attachmentId: string): Promise<void> => {
     await api.delete(`/events/delete-attachment/${attachmentId}`);
-  }
+  },
+  // get admin dashboard
+  getAdminDashboard: async (): Promise<AdminDashboardData> => {
+    const { data } = await api.get("/events/dashboard/analysis");
+    return data.data;
+  },
 };

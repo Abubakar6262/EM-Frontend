@@ -14,6 +14,11 @@ import {
   LineElement,
 } from "chart.js";
 import { Pie, Bar } from "react-chartjs-2";
+import { useEffect, useState } from "react";
+import { AdminDashboardData, eventService } from "@/services/event";
+import { handleApiError } from "@/lib/utils";
+import Loader from "@/components/Loader";
+import { useRouter } from "next/navigation";
 
 // Register Chart.js modules
 ChartJS.register(
@@ -28,31 +33,25 @@ ChartJS.register(
   LineElement
 );
 
-const mockData = {
-  totalEvents: 6,
-  incomingEvents: 4,
-  pastEvents: 2,
-  ongoingEvents: 0,
-  cancelledEvents: 0,
-  totalParticipants: 1,
-  averageSeatsFilled: 0.07,
-  mostPopularEvent: {
-    id: "cmesifusp0007uc2ok1taf4wg",
-    title: "Tech Innovators Summit 2025",
-    participantsCount: 1,
-  },
-  pendingJoinRequests: 2,
-  approvalRate: 1,
-  onlineVsOnsite: { ONLINE: 1, ONSITE: 5 },
-  eventsLast30Days: {
-    "2025-08-28": 2,
-    "2025-08-29": 2,
-    "2025-08-26": 1,
-    "2025-08-27": 1,
-  },
-};
-
 export default function Dashboard() {
+  const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await eventService.getAdminDashboard();
+        setDashboardData(res);
+      } catch (error) {
+        handleApiError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -70,8 +69,8 @@ export default function Dashboard() {
     datasets: [
       {
         data: [
-          mockData.onlineVsOnsite.ONLINE,
-          mockData.onlineVsOnsite.ONSITE,
+          dashboardData?.onlineVsOnsite.ONLINE,
+          dashboardData?.onlineVsOnsite.ONSITE,
         ],
         backgroundColor: ["#3029a6", "#1b7048"],
       },
@@ -79,11 +78,11 @@ export default function Dashboard() {
   };
 
   const eventsLast30DaysData = {
-    labels: Object.keys(mockData.eventsLast30Days),
+    labels: Object.keys(dashboardData?.eventsLast30Days ?? {}),
     datasets: [
       {
         label: "Events Created",
-        data: Object.values(mockData.eventsLast30Days),
+        data: Object.values(dashboardData?.eventsLast30Days ?? {}),
         backgroundColor: "#3029a6",
         borderRadius: 6,
       },
@@ -91,29 +90,41 @@ export default function Dashboard() {
   };
 
   const stats = [
-    { label: "Total Events", value: mockData.totalEvents },
-    { label: "Incoming Events", value: mockData.incomingEvents },
-    { label: "Past Events", value: mockData.pastEvents },
-    { label: "Ongoing Events", value: mockData.ongoingEvents },
-    { label: "Cancelled Events", value: mockData.cancelledEvents },
-    { label: "Total Participants", value: mockData.totalParticipants },
+    { label: "Total Events", value: dashboardData?.totalEvents, move: "/dashboard/my-events" },
+    { label: "Incoming Events", value: dashboardData?.incomingEvents, move: "/dashboard/my-events?status=incoming" },
+    { label: "Past Events", value: dashboardData?.pastEvents, move: "/dashboard/my-events?status=past" },
+    { label: "Ongoing Events", value: dashboardData?.ongoingEvents, move: "/dashboard/my-events?status=live" },
+    { label: "Cancelled Events", value: dashboardData?.cancelledEvents, move: "/dashboard/my-events?status=cancelled" },
+    { label: "Total Participants", value: dashboardData?.totalParticipants, move: "/dashboard/manage-requests" },
     {
       label: "Average Seats Filled",
-      value: `${(mockData.averageSeatsFilled * 100).toFixed(0)}%`,
+      value: `${((dashboardData?.averageSeatsFilled ?? 0) * 100).toFixed(0)}%`,
+      move: "/dashboard/my-events",
     },
     {
       label: "Pending Join Requests",
-      value: mockData.pendingJoinRequests,
+      value: dashboardData?.pendingJoinRequests,
+      move: "/dashboard/manage-requests",
     },
     {
       label: "Approval Rate",
-      value: `${(mockData.approvalRate * 100).toFixed(0)}%`,
+      value: `${((dashboardData?.approvalRate ?? 0) * 100).toFixed(0)}%`,
+      move: "/dashboard/manage-requests",
     },
     {
       label: "Most Popular Event",
-      value: `${mockData.mostPopularEvent.title} (${mockData.mostPopularEvent.participantsCount} participants)`,
+      value: dashboardData?.mostPopularEvent
+        ? `${dashboardData.mostPopularEvent.title} (${dashboardData.mostPopularEvent.participantsCount} participants)`
+        : "N/A",
+      move: dashboardData?.mostPopularEvent
+        ? `/dashboard/my-events/${dashboardData.mostPopularEvent.id}`
+        : "/dashboard/my-events",
     },
   ];
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="p-4 sm:p-6 space-y-8">
@@ -138,7 +149,8 @@ export default function Dashboard() {
           <motion.div
             key={idx}
             whileHover={{ scale: 1.02 }}
-            className="bg-card rounded-2xl p-4 sm:p-5 shadow border border-border"
+            onClick={() => router.push(stat.move)}
+            className="bg-card rounded-2xl p-4 sm:p-5 shadow border border-border cursor-pointer hover:shadow-md transition"
           >
             <h3 className="text-base sm:text-lg font-medium">{stat.label}</h3>
             <p className="text-xl sm:text-2xl font-bold text-primary mt-2 break-words">
@@ -161,7 +173,18 @@ export default function Dashboard() {
             Online vs Onsite Events
           </h3>
           <div className="h-64 sm:h-72 md:h-96">
-            <Pie data={onlineVsOnsiteData} options={chartOptions} />
+            <Pie
+              data={onlineVsOnsiteData}
+              options={{
+                ...chartOptions,
+                onClick: (_, elements) => {
+                  if (!elements.length) return;
+                  const index = elements[0].index;
+                  const type = index === 0 ? "ONLINE" : "ONSITE";
+                  router.push(`/dashboard/my-events?type=${type}`);
+                },
+              }}
+            />
           </div>
         </motion.div>
 
