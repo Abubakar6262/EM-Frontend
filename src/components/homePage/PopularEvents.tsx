@@ -2,31 +2,33 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, CalendarSearch, MapPin } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { truncateText } from "@/lib/truncateText";
 import { useEffect, useState } from "react";
-import { handleApiError } from "@/lib/utils";
 import { Event, eventService } from "@/services/event";
 import Link from "next/link";
 import Loader from "../Loader";
 
 export default function PopularEvents() {
-    const [events, setEvents] = useState<Event[]>([]); // store fetched events
+    const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-
 
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const res = await eventService.getAll(); // call your service
+                const res = await eventService.getAll();
                 const topEvents = res.data
-                    .sort((a, b) => (b.participants?.length ?? 0) - (a.participants?.length ?? 0))
+                    .sort(
+                        (a, b) =>
+                            (b.participants?.length ?? 0) -
+                            (a.participants?.length ?? 0)
+                    )
                     .slice(0, 4);
                 setEvents(topEvents);
                 console.log("events ", topEvents);
             } catch (err: unknown) {
-                handleApiError(err);
+                console.log(err);
             } finally {
                 setLoading(false);
             }
@@ -36,7 +38,11 @@ export default function PopularEvents() {
     }, []);
 
     if (loading) {
-        return <div className="text-center py-10"> <Loader/></div>;
+        return (
+            <div className="text-center py-10">
+                <Loader />
+            </div>
+        );
     }
 
     return (
@@ -54,16 +60,30 @@ export default function PopularEvents() {
 
             {/* Responsive Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {events.length === 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="col-span-full flex flex-col items-center justify-center py-16 text-center"
+                    >
+                        <CalendarSearch className="w-16 h-16 text-gray-400 mb-4" />
+                        <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            No Popular events found
+                        </h3>
+                    </motion.div>
+                )}
+
                 {events.map((event, i) => (
                     <motion.div
                         key={event.id}
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         whileHover={{
-                            scale: 1.05,            // slightly bigger
-                            y: -5,                  // lift it up a little
+                            scale: 1.05,
+                            y: -5,
                             transition: {
-                                type: "spring",       // spring for bouncing effect
+                                type: "spring",
                                 stiffness: 300,
                                 damping: 20,
                             },
@@ -81,7 +101,9 @@ export default function PopularEvents() {
                         />
 
                         <div className="p-5 flex flex-col flex-1">
-                            <h3 className="font-semibold text-lg line-clamp-1">{event.title}</h3>
+                            <h3 className="font-semibold text-lg line-clamp-1">
+                                {event.title}
+                            </h3>
 
                             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 flex-1">
                                 {truncateText(event.description, 20)}
@@ -109,7 +131,6 @@ export default function PopularEvents() {
                             </div>
                         </div>
                     </motion.div>
-
                 ))}
             </div>
         </section>

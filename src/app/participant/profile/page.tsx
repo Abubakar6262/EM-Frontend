@@ -15,15 +15,6 @@ import { notify } from "@/data/global";
 import { EditProfileSchema, PasswordSchema } from "@/validations/userSchema";
 import { handleApiError } from "@/lib/utils";
 
-
-
-
-
-
-
-// --------------------
-// Components
-// --------------------
 export default function ProfilePage() {
     const user = useSelector((state: RootState) => state.auth.user);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -33,13 +24,11 @@ export default function ProfilePage() {
         if (!e.target.files?.[0]) return;
         try {
             const response = await authService.updateProfilePic(e.target.files[0]);
-            // Assuming API returns updated user
             dispatch(
                 setUser(
                     user ? { ...user, profilePic: response.profilePic } : null
                 )
             );
-
             notify("Profile picture updated successfully", "success");
         } catch (error) {
             console.error("Failed to update profile picture:", error);
@@ -47,15 +36,14 @@ export default function ProfilePage() {
         }
     };
 
-
     return (
-        <div className="flex flex-col lg:flex-row gap-6 p-6 bg-muted/30">
-            {/* Left Side - Profile Card */}
+        <div className="p-6 bg-muted/30 flex justify-center">
+            {/* Profile Card - Full Width */}
             <motion.div
-                initial={{ opacity: 0, x: -40 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="lg:w-1/3 w-full bg-card shadow-md rounded-2xl p-6 flex flex-col items-center relative"
+                className="w-full max-w-3xl bg-card shadow-md rounded-2xl p-6 flex flex-col items-center relative"
             >
                 {/* Profile Image / Initial */}
                 <div className="relative w-28 h-28">
@@ -121,7 +109,7 @@ export default function ProfilePage() {
                                 notify(response.message, "success");
                                 resetForm();
                             } catch (error) {
-                                handleApiError(error, "Failed to update password")
+                                handleApiError(error, "Failed to update password");
                             } finally {
                                 setSubmitting(false);
                             }
@@ -184,17 +172,6 @@ export default function ProfilePage() {
                         )}
                     </Formik>
                 </div>
-            </motion.div>
-
-            {/* Right Side - Tabs and Forms */}
-            <motion.div
-                initial={{ opacity: 0, x: 40 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-                className="lg:w-2/3 w-full bg-card shadow-md rounded-2xl p-6"
-            >
-                
-
             </motion.div>
 
             {/* Edit Profile Modal */}

@@ -1,4 +1,5 @@
 "use client";
+import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const ThemeToggle = () => {
@@ -26,9 +27,17 @@ const ThemeToggle = () => {
     return (
         <button
             onClick={() => setDark(!dark)}
-            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 dark:text-white"
+            className="px-4 py-2 flex items-center gap-2 rounded bg-gray-200 dark:bg-gray-700 dark:text-white hover:scale-105 transition"
         >
-            {dark ? "☀️ Light Mode" : "🌙 Dark Mode"}
+            {dark ? (
+                <>
+                    <Sun className="w-4 h-4" color="#F59E0B" /> Light Mode
+                </>
+            ) : (
+                <>
+                    <Moon className="w-4 h-4" color="#F59E0B" /> Dark Mode
+                </>
+            )}
         </button>
     );
 };

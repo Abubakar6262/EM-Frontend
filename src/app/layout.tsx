@@ -5,6 +5,8 @@ import "./globals.css";
 import "@/data/global"; // for window.notify
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css";
+
 
 export const metadata: Metadata = {
   title: "EventHub",
@@ -16,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body>
 
-        
+
         <Providers>
           {/* only wraps children, no navbar/footer */}
           <div className="min-h-screen flex flex-col">
@@ -25,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
           </div>
         </Providers>
-      
+        
       </body>
     </html>
   );

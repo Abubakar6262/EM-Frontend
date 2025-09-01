@@ -6,11 +6,13 @@ import { getEventSchema } from "@/validations/eventSchema";
 import { handleApiError } from "@/lib/utils";
 import { notify } from "@/data/global";
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { EventFormValues } from "@/app/dashboard/create-event/page";
-
-// ---------- Interfaces ----------
-
+import Image from "next/image";
+import { Attachment, eventService } from "@/services/event";
+import { Trash2 } from "lucide-react";
+import Modal from "../ui/Modal";
+import { useRouter } from "next/navigation";
 
 interface EventFormProps {
     initialValues: EventFormValues;
@@ -19,16 +21,22 @@ interface EventFormProps {
     onCancel?: () => void;
 }
 
-
-// ---------- Component ----------
 export default function EventForm({
     initialValues,
     onSubmit,
     submitLabel = "Save",
     onCancel,
 }: EventFormProps) {
+    const [attachments, setAttachments] = useState<Attachment[]>(
+        initialValues.attachments || []
+    );
+    const [openDeleteModal, setOpenDeleteModal] = useState<number | null>(null);
+    const router = useRouter();
 
-    console.log("Initial Values:", initialValues);
+    useEffect(() => {
+        setAttachments(initialValues.attachments || []);
+    }, [initialValues]);
+
     return (
         <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -37,12 +45,12 @@ export default function EventForm({
             className="w-full p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg"
         >
             <Formik
-                initialValues={initialValues}
-                validationSchema={getEventSchema(!!event)}
+                initialValues={{ ...initialValues, attachments: undefined }}
+                validationSchema={getEventSchema(!!initialValues)}
                 enableReinitialize
                 onSubmit={async (values, { setSubmitting, resetForm }) => {
                     try {
-                        await onSubmit(values);
+                        await onSubmit({ ...values, attachments });
                         notify(
                             submitLabel === "Create Event"
                                 ? "Event created successfully"
@@ -51,6 +59,7 @@ export default function EventForm({
                         );
                         if (submitLabel === "Create Event") {
                             resetForm();
+                            router.push("/dashboard/my-events");
                         }
                     } catch (error) {
                         handleApiError(error);
@@ -59,7 +68,7 @@ export default function EventForm({
                     }
                 }}
             >
-                {({ isSubmitting, values, setFieldValue, resetForm }) => (
+                {({ isSubmitting, values, resetForm, setFieldValue }) => (
                     <Form className="grid gap-6">
                         {/* Title */}
                         <div>
@@ -257,11 +266,11 @@ export default function EventForm({
                                     setFieldValue("thumbnail", e.target.files?.[0] || null)
                                 }
                                 className="block w-full text-sm text-gray-900 dark:text-gray-100
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-gray-500 file:text-white
-                  hover:file:bg-gray-400"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-lg file:border-0
+                file:text-sm file:font-semibold
+                file:bg-gray-500 file:text-white
+                hover:file:bg-gray-400"
                             />
                             <ErrorMessage
                                 name="thumbnail"
@@ -270,9 +279,52 @@ export default function EventForm({
                             />
                         </div>
 
+                        {/* Display Attachments */}
+                        {attachments.length > 0 && (
+                            <div>
+                                <label className="block mb-2 font-medium">Attachments</label>
+                                <div className="flex flex-wrap gap-4">
+                                    {attachments.map((att: Attachment, index: number) => {
+                                        const isVideo = att.url.match(/\.(mp4|webm|ogg)$/i);
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="relative w-[200px] h-[200px] rounded-lg overflow-hidden border dark:border-gray-700"
+                                            >
+                                                {isVideo ? (
+                                                    <video
+                                                        src={att.url}
+                                                        controls
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        src={att.url}
+                                                        alt={`Attachment ${index + 1}`}
+                                                        className="w-full h-full object-cover"
+                                                        width={200}
+                                                        height={200}
+                                                    />
+                                                )}
+
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow"
+                                                    onClick={() => setOpenDeleteModal(index)}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Media */}
                         <div>
-                            <label className="block mb-2">Media (images/videos)</label>  
+                            <label className="block mb-2">Media (images/videos)</label>
                             <input
                                 type="file"
                                 multiple
@@ -284,11 +336,11 @@ export default function EventForm({
                                     )
                                 }
                                 className="block w-full text-sm text-gray-900 dark:text-gray-100
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-lg file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-gray-500 file:text-white
-                  hover:file:bg-gray-400"
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-lg file:border-0
+                file:text-sm file:font-semibold
+                file:bg-gray-500 file:text-white
+                hover:file:bg-gray-400"
                             />
                         </div>
 
@@ -317,6 +369,49 @@ export default function EventForm({
                                 {submitLabel}
                             </Button>
                         </div>
+
+                        {/* Delete Confirmation Modal */}
+                        <Modal
+                            isOpen={openDeleteModal !== null}
+                            onClose={() => setOpenDeleteModal(null)}
+                            title="Delete Attachment"
+                            size="sm"
+                            footer={
+                                <>
+                                    <Button
+                                        type="button"
+                                        variant="warning"
+                                        onClick={() => setOpenDeleteModal(null)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="danger"
+                                        onClick={async () => {
+                                            if (openDeleteModal !== null) {
+                                                const toDelete = attachments[openDeleteModal];
+                                                try {
+                                                    await eventService.deleteAttachment(toDelete.id);
+                                                    setAttachments((prev) =>
+                                                        prev.filter((_, idx) => idx !== openDeleteModal)
+                                                    );
+                                                    notify("Deleted successfully", "success");
+                                                } catch (error) {
+                                                    handleApiError(error);
+                                                } finally {
+                                                    setOpenDeleteModal(null);
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        Delete
+                                    </Button>
+                                </>
+                            }
+                        >
+                            <p>Do you want to delete this attachment?</p>
+                        </Modal>
                     </Form>
                 )}
             </Formik>

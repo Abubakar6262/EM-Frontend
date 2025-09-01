@@ -24,6 +24,7 @@ export default function EventDetailsPage() {
 
     const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Track participant status
     const [participantStatus, setParticipantStatus] = useState<"NONE" | "PENDING" | "APPROVED">("NONE");
@@ -74,6 +75,7 @@ export default function EventDetailsPage() {
 
     // handle confirm join
     const handleJoinEvent = async () => {
+        setIsProcessing(true);
         try {
             if (!eventId) return;
 
@@ -97,6 +99,9 @@ export default function EventDetailsPage() {
             console.error(error);
             notify("Failed to join the event", "error");
         }
+        finally {
+            setIsProcessing(false);
+        }
     };
 
     // Button label and disabled logic
@@ -108,6 +113,19 @@ export default function EventDetailsPage() {
         disabled = true;
     } else if (participantStatus === "APPROVED") {
         joinLabel = "Joined";
+        disabled = true;
+    }
+
+    // Extra conditions
+    const now = new Date();
+    if (new Date(event.endAt) < now) {
+        joinLabel = "Event Ended";
+        disabled = true;
+    } else if (
+        event.totalSeats &&
+        event.confirmedCount >= event.totalSeats
+    ) {
+        joinLabel = "Seats Full";
         disabled = true;
     }
 
@@ -156,7 +174,7 @@ export default function EventDetailsPage() {
                         <Button variant="warning" onClick={() => setOpenModal(false)}>
                             Cancel
                         </Button>
-                        <Button variant="secondary" onClick={handleJoinEvent}>Confirm</Button>
+                        <Button variant="secondary" onClick={handleJoinEvent} disabled={isProcessing}>{isProcessing ? "Joining..." : "Confirm"}</Button>
                     </>
                 }
             >

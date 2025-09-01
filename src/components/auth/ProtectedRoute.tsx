@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
 
     useEffect(() => {
         if (!loading) {
-            console.log(user)
+            // console.log(user)
             if (!user) {
                 router.replace("/");
                 return;
@@ -31,7 +31,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
         }
     }, [user, loading, router, allowedRoles]);
 
-    if (loading || !user) {
+    if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Loader />

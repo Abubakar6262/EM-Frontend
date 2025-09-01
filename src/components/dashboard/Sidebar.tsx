@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, CalendarPlus, List, LogOut, User, ListChecks, LayoutDashboard } from "lucide-react";
+import { X, CalendarPlus, List, LogOut, User, ListChecks, LayoutDashboard, Users } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { useEffect, useState } from "react";
@@ -13,6 +13,7 @@ import { handleApiError } from "@/lib/utils";
 import { notify } from "@/data/global";
 import { authService } from "@/services/auth";
 import { clearUser } from "@/store/slices/authSlice";
+import { usePathname } from "next/navigation";
 
 type SidebarProps = {
     open: boolean;
@@ -23,6 +24,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     const [isDesktop, setIsDesktop] = useState(false);
     const user = useSelector((state: RootState) => state.auth.user);
     const dispatch = useDispatch();
+    const pathname = usePathname();
 
     // Track screen size
     useEffect(() => {
@@ -48,6 +50,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         { label: "Create Event", icon: CalendarPlus, href: "/dashboard/create-event" },
         { label: "My Events", icon: List, href: "/dashboard/my-events" },
         { label: "Manage Requests", icon: ListChecks, href: "/dashboard/manage-requests" },
+        { label: "Manage Users", icon: Users, href: "/dashboard/manage-user" },
     ];
 
     return (
@@ -73,7 +76,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 {sidebarItems.map((item) => (
                     <Link key={item.label} href={item.href}>
                         <Button
-                            variant="primary"
+                            variant={pathname === item.href ? "primary" : "ghost"}
                             size="md"
                             align="start" 
                             className="w-full gap-2"
@@ -91,7 +94,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <ThemeToggle />
                 </span>
                 <Link href="/dashboard/profile">
-                    <Button variant="primary"
+                    <Button variant={pathname === "/dashboard/profile" ? "primary" : "ghost"}
                         size="md"
                         align="start"
                         className="w-full gap-2">

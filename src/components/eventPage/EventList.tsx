@@ -8,9 +8,10 @@ interface EventListProps {
     events: Event[];
     view: "grid" | "list";
     onDeleteEvent?: (id: string) => void;
+    onRefresh?: () => void;
 }
 
-export default function EventList({ events, view, onDeleteEvent }: EventListProps) {
+export default function EventList({ events, view, onDeleteEvent, onRefresh }: EventListProps) {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -35,7 +36,7 @@ export default function EventList({ events, view, onDeleteEvent }: EventListProp
             }
         >
             {events.map((event, i) => (
-                <EventCard key={event.id} event={event} view={activeView} index={i} onDeleteEvent={onDeleteEvent} />
+                <EventCard key={event.id} event={event} view={activeView} index={i} onDeleteEvent={onDeleteEvent} onEventUpdated={onRefresh} />
             ))}
         </div>
     );

@@ -10,6 +10,8 @@ import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { notify } from "@/data/global";
 import { handleApiError } from "@/lib/utils";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 export default function MyJoinRequests() {
     const [requests, setRequests] = useState<ParticipantEvent[]>([]);
@@ -19,6 +21,8 @@ export default function MyJoinRequests() {
 
     const [selectedRequest, setSelectedRequest] = useState<ParticipantEvent | null>(null);
     const [filter, setFilter] = useState<"ALL" | "APPROVED" | "PENDING">("ALL"); // <-- Add filter state
+
+    const user = useSelector((state: RootState) => state.auth.user);
 
     const userId = "CURRENT_USER_ID";
     const limit = 5;
@@ -181,14 +185,20 @@ export default function MyJoinRequests() {
                                         </span>
                                     </div>
 
-                                    {r.event.type === "ONLINE" && r.event.joinLink && (
-                                        <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
-                                            <LinkIcon size={16} />
-                                            <a href={r.event.joinLink} target="_blank" className="underline">
-                                                Join Event
-                                            </a>
-                                        </div>
-                                    )}
+                                    {/* Link only show to participant when status is approved */}
+                                    {
+                                        user && user.role === "PARTICIPANT" && r.status === "APPROVED" && (
+                                            r.event.type === "ONLINE" && r.event.joinLink && (
+                                                <div className="flex items-center gap-2 text-sm text-blue-600 mb-2">
+                                                    <LinkIcon size={16} />
+                                                    <a href={r.event.joinLink} target="_blank" className="underline">
+                                                        Join Event
+                                                    </a>
+                                                </div>
+                                            )
+                                        )
+                                    }
+
                                     {r.event.type === "ONSITE" && r.event.venue && (
                                         <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-400 mb-2">
                                             <MapPin size={16} />
