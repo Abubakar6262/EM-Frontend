@@ -51,7 +51,7 @@ export const authService = {
   },
 
   getMe: async () => {
-    const { data } = await api.get("/user/me");
+    const { data } = await api.post("/user/me");
     return data;
   },
 
