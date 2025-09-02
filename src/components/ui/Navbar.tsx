@@ -24,14 +24,14 @@ export default function Navbar() {
 
     const handleLogout = async () => {
         try {
-            await authService.logout(); 
+            await authService.logout();
             dispatch(clearUser());
             router.push("/");
-            notify("Logout successful","success");
+            notify("Logout successful", "success");
         } catch (err) {
             console.error("Logout error:", err);
-            notify("Logout failed","error");
-        } 
+            notify("Logout failed", "error");
+        }
     };
 
     const isAuthenticated = Boolean(user);
@@ -47,7 +47,7 @@ export default function Navbar() {
 
                     {/* Desktop Nav */}
                     <div className="hidden md:flex space-x-6 items-center">
-                        {user?.role === "ORGANIZER" &&(
+                        {user?.role === "ORGANIZER" && (
                             <Link
                                 href="/dashboard"
                                 className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
@@ -55,7 +55,7 @@ export default function Navbar() {
                                 Dashboard
                             </Link>
                         )}
-                        {user?.role === "PARTICIPANT" &&(
+                        {user?.role === "PARTICIPANT" && (
                             <Link
                                 href="/participant"
                                 className="text-gray-700 dark:text-gray-200 hover:text-indigo-600"
@@ -146,7 +146,11 @@ export default function Navbar() {
 
                                             {/* Links */}
                                             <Link
-                                                href="participant/profile"
+                                                    href={
+                                                        user?.role === "PARTICIPANT"
+                                                            ? "/participant/profile"
+                                                            : "/dashboard/profile"
+                                                    }
                                                 className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                                             >
                                                 <User className="w-4 h-4 mr-2" /> Profile
@@ -190,26 +194,28 @@ export default function Navbar() {
                         exit={{ height: 0 }}
                         className="md:hidden bg-white dark:bg-gray-900 px-4 py-2 space-y-2 shadow"
                     >
-                        {
-                            user?.role === "ORGANIZER" && (
-                                <Link
-                                    href="/dashboard"
-                                    className="block text-gray-700 dark:text-gray-200"
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    Dashboard
-                                </Link>
-                            )
-                        }
-                        {user?.role === "PARTICIPANT" && (
-                            <Link
-                                href="/participant"
-                                className="block text-gray-700 dark:text-gray-200"
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                My Requests
-                            </Link>
-                        )}
+                        {user ? (
+                            <>
+                                {user.role === "ORGANIZER" && (
+                                    <Link
+                                        href="/dashboard"
+                                        className="block text-gray-700 dark:text-gray-200"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+                                )}
+                                {user.role === "PARTICIPANT" && (
+                                    <Link
+                                        href="/participant"
+                                        className="block text-gray-700 dark:text-gray-200"
+                                        onClick={() => setMobileOpen(false)}
+                                    >
+                                        My Requests
+                                    </Link>
+                                )}
+                            </>
+                        ) : null}
 
                         <Link href="/" className="block text-gray-700 dark:text-gray-200" onClick={() => setMobileOpen(false)}>
                             Home
@@ -219,6 +225,9 @@ export default function Navbar() {
                         </Link>
                         <Link href="/contact" className="block text-gray-700 dark:text-gray-200" onClick={() => setMobileOpen(false)}>
                             Contact
+                        </Link>
+                        <Link href="/events" className="block text-gray-700 dark:text-gray-200" onClick={() => setMobileOpen(false)}>
+                            Events
                         </Link>
 
 
@@ -238,7 +247,11 @@ export default function Navbar() {
                         ) : (
                             <div className="space-y-2">
                                 <Link
-                                    href="/participant/profile"
+                                    href={
+                                        user?.role === "PARTICIPANT"
+                                            ? "/participant/profile"
+                                            : "/dashboard/profile"
+                                    }
                                     className="block text-gray-700 dark:text-gray-200"
                                     onClick={() => setMobileOpen(false)}
                                 >

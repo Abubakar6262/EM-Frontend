@@ -160,27 +160,34 @@ export default function EventCard({
                     }`}
             >
                 {/* Image Container with Badges */}
-                <div className={`relative ${view === "list" ? "w-2/5" : "w-full"}`}>
+                <div
+                    className={`relative ${view === "list" ? "w-2/5 flex" : "w-full"}`} // 👈 flex added for list
+                >
                     <Image
                         src={event.thumbnail}
                         alt={event.title}
                         className={
                             view === "list"
-                                ? "w-full object-cover max-h-[300px]"
-                                : "w-full h-40 object-cover"
+                                ? "w-full h-full object-cover" // 👈 fill height in list view
+                                : "w-full h-40 object-cover"   // 👈 fixed height in grid view
                         }
                         width={400}
                         height={200}
                     />
 
                     {/* Badges Container - Top Left */}
-                    {user?.role === "ORGANIZER" &&
-                        <div className="absolute top-2 left-2 flex gap-2" title="Delete Event" aria-label="Delete Event" onClick={() => setOpenDeleteModal(true)}>
+                    {user?.role === "ORGANIZER" && (
+                        <div
+                            className="absolute top-2 left-2 flex gap-2"
+                            title="Delete Event"
+                            aria-label="Delete Event"
+                            onClick={() => setOpenDeleteModal(true)}
+                        >
                             <span className="bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200 p-1 rounded-full hover:bg-red-200 hover:dark:bg-red-800 transition">
                                 <Trash2 className="w-6 h-6 text-red-500 cursor-pointer" />
                             </span>
                         </div>
-                    }
+                    )}
                     <div className="absolute top-2 right-2 flex gap-2">
                         {/* Event Status Badge */}
                         <span
@@ -216,9 +223,7 @@ export default function EventCard({
                     {event.totalSeats && event.totalSeats >= 1 && (
                         <div className="mt-4">
                             <div className="flex justify-between text-sm mb-1">
-                                <span className="text-gray-600 dark:text-gray-300">
-                                    Seats Filled
-                                </span>
+                                <span className="text-gray-600 dark:text-gray-300">Seats Filled</span>
                                 <span className="font-medium text-gray-800 dark:text-gray-100">
                                     {event.confirmedCount} / {event.totalSeats}
                                 </span>
@@ -228,7 +233,9 @@ export default function EventCard({
                                 <motion.div
                                     className="h-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${(event.confirmedCount / event.totalSeats) * 100}%` }}
+                                    animate={{
+                                        width: `${(event.confirmedCount / event.totalSeats) * 100}%`,
+                                    }}
                                     transition={{ duration: 0.8, ease: "easeOut" }}
                                 />
                             </div>
@@ -249,9 +256,16 @@ export default function EventCard({
                     )}
 
                     {/* Buttons */}
-                    <div className={`mt-4 ${view === "list" || user?.role === "ORGANIZER" ? "flex gap-3" : ""}`}>
+                    <div
+                        className={`mt-4 ${view === "list" || user?.role === "ORGANIZER" ? "flex gap-3" : ""
+                            }`}
+                    >
                         <Button
-                            onClick={user?.role !== "ORGANIZER" ? () => (router.push(`/events/${event.id}`)) : () => (router.push(`my-events/${event.id}`))}
+                            onClick={
+                                user?.role !== "ORGANIZER"
+                                    ? () => router.push(`/events/${event.id}`)
+                                    : () => router.push(`my-events/${event.id}`)
+                            }
                             variant="primary"
                             size="md"
                             className={view === "list" ? "flex-1" : "w-full"}
@@ -270,7 +284,7 @@ export default function EventCard({
                         )}
                         {view === "list" && user?.role !== "ORGANIZER" && (
                             <Button
-                                onClick={() => user ? setOpenModal(true) : router.push('/login')}
+                                onClick={() => (user ? setOpenModal(true) : router.push("/login"))}
                                 variant="secondary"
                                 size="md"
                                 disabled={disabled}
@@ -282,6 +296,7 @@ export default function EventCard({
                     </div>
                 </div>
             </motion.div>
+
 
             {/* --- Modal --- */}
             <Modal

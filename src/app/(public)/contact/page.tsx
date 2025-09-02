@@ -33,7 +33,7 @@ export default function ContactPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="max-w-2xl mx-auto text-lg opacity-90"
+                    className="max-w-2xl mx-auto text-lg opacity-90 px-2 sm:px-0"
                 >
                     We’d love to hear from you! Whether you have a question, feedback, or partnership idea —
                     let’s connect.
@@ -41,7 +41,7 @@ export default function ContactPage() {
             </section>
 
             {/* Contact Info */}
-            <section className="max-w-6xl mx-auto px-6 py-16 grid gap-8 md:grid-cols-3">
+            <section className="max-w-6xl mx-auto px-0 sm:px-6 py-16 grid gap-8 md:grid-cols-3">
                 {contactData.map((item, i) => (
                     <motion.div
                         key={i}
@@ -59,7 +59,7 @@ export default function ContactPage() {
             </section>
 
             {/* Contact Form */}
-            <section className="max-w-4xl mx-auto px-6 pb-20">
+            <section className="max-w-4xl mx-auto px-0 sm:px-6 pb-20">
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}

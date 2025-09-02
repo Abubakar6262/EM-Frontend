@@ -26,7 +26,7 @@ export default function PopularEvents() {
                     )
                     .slice(0, 4);
                 setEvents(topEvents);
-                console.log("events ", topEvents);
+                // console.log("events ", topEvents);
             } catch (err: unknown) {
                 console.log(err);
             } finally {
@@ -46,7 +46,7 @@ export default function PopularEvents() {
     }
 
     return (
-        <section className="max-w-7xl mx-auto px-6 py-16">
+        <section className="max-w-7xl mx-auto px-0 sm:px-6 py-16">
             {/* Section Title */}
             <motion.h2
                 initial={{ opacity: 0, y: 20 }}

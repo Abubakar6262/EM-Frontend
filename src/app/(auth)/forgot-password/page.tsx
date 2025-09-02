@@ -8,6 +8,7 @@ import Link from "next/link";
 import { authService } from "@/services/auth";
 import { ForgotPasswordSchema } from "@/validations/authSchema";
 import { notify } from "@/data/global";
+import { handleApiError } from "@/lib/utils";
 
 
 
@@ -55,7 +56,8 @@ export default function ForgotPasswordPage() {
                                 values.email = "";
                             } catch (err: unknown) {
                                 console.error(err);
-                                setErrorMessage("Something went wrong. Please try again.");
+                                handleApiError(err);
+                                // setErrorMessage("Something went wrong. Please try again.");
                             } finally {
                                 setSubmitting(false);
                             }

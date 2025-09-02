@@ -80,6 +80,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                             size="md"
                             align="start" 
                             className="w-full gap-2"
+                            onClick={onClose}
                         >
                             <item.icon className="h-5 w-5" />
                             {item.label}
@@ -90,11 +91,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
             {/* Bottom */}
             <div className="mt-auto space-y-2">
-                <span className=" md:hidden">
-                    <ThemeToggle />
-                </span>
+                <div className=" md:hidden w-full mb-2">
+                    <ThemeToggle fullWidth />
+                </div>
                 <Link href="/dashboard/profile">
                     <Button variant={pathname === "/dashboard/profile" ? "primary" : "ghost"}
+                        onClick={onClose}
                         size="md"
                         align="start"
                         className="w-full gap-2">

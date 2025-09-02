@@ -2,7 +2,11 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const ThemeToggle = () => {
+interface ThemeToggleProps {
+    fullWidth?: boolean; // optional prop
+}
+
+const ThemeToggle = ({ fullWidth = false }: ThemeToggleProps) => {
     const [dark, setDark] = useState(false);
 
     // Load saved theme on mount
@@ -27,7 +31,10 @@ const ThemeToggle = () => {
     return (
         <button
             onClick={() => setDark(!dark)}
-            className="px-4 py-2 flex items-center gap-2 rounded bg-gray-200 dark:bg-gray-700 dark:text-white hover:scale-105 transition"
+            className={`px-4 py-2 flex items-center gap-2 rounded 
+        bg-gray-200 dark:bg-gray-700 dark:text-white 
+        hover:scale-105 transition
+        ${fullWidth ? "w-full justify-center rounded-2xl" : "w-auto justify-start"}`}
         >
             {dark ? (
                 <>

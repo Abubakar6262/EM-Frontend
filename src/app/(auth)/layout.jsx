@@ -1,10 +1,10 @@
 
+import AuthRedirect from "@/components/auth/AuthRedirect";
+
 export default function AuthLayout({ children }) {
-  
   return (
     <>
-      {children}
-
+      <AuthRedirect>{children}</AuthRedirect>
     </>
   );
 }

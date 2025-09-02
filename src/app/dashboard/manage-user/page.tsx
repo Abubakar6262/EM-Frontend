@@ -20,7 +20,6 @@ import {
 import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css";
 import { handleApiError } from "@/lib/utils";
 import { notify } from "@/data/global";
-import Button from "@/components/ui/Button";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<UserItem[]>([]);
@@ -164,7 +163,7 @@ export default function UserManagementPage() {
                                 <Tr key={user.id} className="border-t">
                                     <Td className="px-4 py-3">{(currentPage - 1) * 10 + index + 1}</Td>
                                     <Td className="px-4 py-3">{user.fullName}</Td>
-                                    <Td className="px-4 py-3 break-words min-w-[200px]">{user.email}</Td>
+                                    <Td className="px-4 py-3 break-words min-w-[200px] truncate">{user.email}</Td>
                                     <Td className="px-4 py-3">{user.role}</Td>
                                     <Td className="px-4 py-3 text-right">
                                         {/* Desktop: dropdown menu */}
