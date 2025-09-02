@@ -7,6 +7,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ResetPasswordSchema } from "@/validations/authSchema";
 import { authService } from "@/services/auth";
+import { Eye, EyeOff } from "lucide-react";
+import { handleApiError } from "@/lib/utils";
 
 type ResetPasswordPayload = {
     newPassword: string;
@@ -16,6 +18,9 @@ type ResetPasswordPayload = {
 export default function ResetPasswordForm() {
     const [message, setMessage] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("");
+
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -72,7 +77,8 @@ export default function ResetPasswordForm() {
                                 setTimeout(() => router.push("/login"), 3000);
                             } catch (err) {
                                 console.error(err);
-                                setErrorMessage("Something went wrong. Please try again.");
+                                handleApiError(err);
+                                // setErrorMessage("Something went wrong. Please try again.");
                             } finally {
                                 setSubmitting(false);
                             }
@@ -82,12 +88,23 @@ export default function ResetPasswordForm() {
                             <Form className="grid gap-6">
                                 {/* New Password */}
                                 <div>
-                                    <Field
-                                        type="password"
-                                        name="newPassword"
-                                        placeholder="Enter new password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
+                                    <div className="relative flex items-center w-full">
+                                        <Field
+                                            type={showNewPassword ? "text" : "password"}
+                                            name="newPassword"
+                                            placeholder="Enter new password"
+                                            className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 
+                        bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewPassword((prev) => !prev)}
+                                            className="absolute right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                        >
+                                            {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                     <ErrorMessage
                                         name="newPassword"
                                         component="p"
@@ -97,12 +114,23 @@ export default function ResetPasswordForm() {
 
                                 {/* Confirm Password */}
                                 <div>
-                                    <Field
-                                        type="password"
-                                        name="confirmPassword"
-                                        placeholder="Confirm new password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
+                                    <div className="relative flex items-center w-full">
+                                        <Field
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            name="confirmPassword"
+                                            placeholder="Confirm new password"
+                                            className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 
+                        bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                            className="absolute right-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                     <ErrorMessage
                                         name="confirmPassword"
                                         component="p"

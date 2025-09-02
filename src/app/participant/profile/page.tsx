@@ -14,10 +14,15 @@ import { setUser } from "@/store/slices/authSlice";
 import { notify } from "@/data/global";
 import { EditProfileSchema, PasswordSchema } from "@/validations/userSchema";
 import { handleApiError } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
+
 
 export default function ProfilePage() {
     const user = useSelector((state: RootState) => state.auth.user);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [showOld, setShowOld] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const dispatch = useDispatch();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +42,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="p-6 bg-muted/30 flex justify-center">
+        <div className="px-0  sm:p-6 bg-none sm:bg-muted/30 flex justify-center">
             {/* Profile Card - Full Width */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -118,12 +123,21 @@ export default function ProfilePage() {
                         {({ isSubmitting }) => (
                             <Form className="grid gap-4">
                                 <div>
-                                    <Field
-                                        type="password"
-                                        name="oldPassword"
-                                        placeholder="Old Password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            type={showOld ? "text" : "password"}
+                                            name="oldPassword"
+                                            placeholder="Old Password"
+                                            className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowOld(!showOld)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                        >
+                                            {showOld ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                     <ErrorMessage
                                         name="oldPassword"
                                         component="p"
@@ -132,12 +146,21 @@ export default function ProfilePage() {
                                 </div>
 
                                 <div>
-                                    <Field
-                                        type="password"
-                                        name="newPassword"
-                                        placeholder="New Password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            type={showNew ? "text" : "password"}
+                                            name="newPassword"
+                                            placeholder="New Password"
+                                            className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNew(!showNew)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                        >
+                                            {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                     <ErrorMessage
                                         name="newPassword"
                                         component="p"
@@ -146,12 +169,21 @@ export default function ProfilePage() {
                                 </div>
 
                                 <div>
-                                    <Field
-                                        type="password"
-                                        name="confirmPassword"
-                                        placeholder="Confirm Password"
-                                        className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
+                                    <div className="relative">
+                                        <Field
+                                            type={showConfirm ? "text" : "password"}
+                                            name="confirmPassword"
+                                            placeholder="Confirm Password"
+                                            className="w-full p-3 pr-10 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirm(!showConfirm)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                        >
+                                            {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                     <ErrorMessage
                                         name="confirmPassword"
                                         component="p"

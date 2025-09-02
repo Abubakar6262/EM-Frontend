@@ -6,7 +6,7 @@ import { features } from "@/data/features";
 export default function InfoCards() {
     return (
         <section className="py-16">
-            <div className="max-w-7xl mx-auto px-6 text-center">
+            <div className="max-w-7xl mx-auto px-0 sm:px-6 text-center">
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
                     Why Choose EventHub?
                 </h2>

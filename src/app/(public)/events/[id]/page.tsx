@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Calendar, MapPin, Phone, Mail } from "lucide-react";
-import { useParams } from "next/navigation";
+import { Calendar, MapPin, Mail, Contact } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
 import { Event, eventService } from "@/services/event";
@@ -15,6 +15,8 @@ import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import { notify } from "@/data/global";
 import { participantService } from "@/services/participant";
+import { handleApiError } from "@/lib/utils";
+import ThankYouModal from "@/components/ui/ThankYouModal";
 
 export default function EventDetailsPage() {
     const { id } = useParams();
@@ -28,11 +30,12 @@ export default function EventDetailsPage() {
 
     // Track participant status
     const [participantStatus, setParticipantStatus] = useState<"NONE" | "PENDING" | "APPROVED">("NONE");
-
     const [showAllAttachments, setShowAllAttachments] = useState(false);
-
+    const [showThankYou, setShowThankYou] = useState(false);
     // modal state
     const [openModal, setOpenModal] = useState(false);
+
+    const router = useRouter();
 
     // Fetch event
     useEffect(() => {
@@ -94,10 +97,12 @@ export default function EventDetailsPage() {
             }
 
             setOpenModal(false);
+            setShowThankYou(true);
             notify("Request has been sent", "success");
         } catch (error: unknown) {
             console.error(error);
-            notify("Failed to join the event", "error");
+            handleApiError(error);
+            // notify("Failed to join the event", "error");
         }
         finally {
             setIsProcessing(false);
@@ -142,17 +147,17 @@ export default function EventDetailsPage() {
                         className="w-full h-64 md:h-[400px] object-cover"
                     />
                 )}
-                <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
-                    <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+                <div className="absolute top-4 left-0  sm:left-4 flex-col sm:flex-row flex gap-2 flex-wrap">
+                    <span className="bg-blue-600 text-white px-3 py-1 rounded-e-full sm:rounded-full text-sm font-semibold shadow">
                         {event.type.toUpperCase()}
                     </span>
-                    <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+                    <span className="bg-green-600 text-white px-3 py-1 rounded-e-full sm:rounded-full text-sm font-semibold shadow">
                         {new Date(event.startAt) > new Date() ? "UPCOMING" : "PAST"}
                     </span>
                 </div>
                 {user?.role !== "ORGANIZER" && (<button
                     disabled={disabled}
-                    onClick={() => user ? setOpenModal(true) : window.location.href = '/login'}
+                    onClick={() => user ? setOpenModal(true) : router.push('/login')}
                     className={`absolute top-4 right-4 px-5 py-2 rounded-xl shadow text-white font-semibold transition
                         ${disabled
                             ? "bg-gray-400 cursor-not-allowed"
@@ -184,6 +189,14 @@ export default function EventDetailsPage() {
                 </p>
             </Modal>
 
+            {/* Thank you modal */}
+
+            <ThankYouModal
+                isOpen={showThankYou}
+                onClose={() => setShowThankYou(false)}
+                title="Thank You!"
+                message="Your request to join the event has been submitted successfully."
+            />
             {/* Main Info */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
@@ -223,7 +236,7 @@ export default function EventDetailsPage() {
                                         </div>
                                         {event.contactInfo && (
                                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                                <Phone className="w-4 h-4" /> {event.contactInfo}
+                                                <Contact className="w-4 h-4" /> {event.contactInfo}
                                             </div>
                                         )}
                                     </div>
@@ -236,7 +249,7 @@ export default function EventDetailsPage() {
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow space-y-4">
                             <h2 className="text-xl font-semibold">Hosts</h2>
                             <div className="space-y-3">
-                                {event.hosts.map((host,key) => (
+                                {event.hosts.map((host, key) => (
                                     <div
                                         key={key}
                                         className="flex items-center gap-3 p-4 border rounded-lg dark:border-gray-700"

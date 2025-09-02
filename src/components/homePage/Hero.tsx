@@ -11,7 +11,7 @@ export default function Hero() {
     const user = useSelector((state: RootState) => state.auth.user);
 
     return (
-        <section className="relative bg-gradient-to-r from-indigo-600 to-emerald-500 text-white py-24">
+        <section className="relative bg-gradient-to-r from-indigo-600 to-emerald-500 text-white py-12  sm:py-24">
             <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
                 {/* Left Content */}
                 <motion.div
