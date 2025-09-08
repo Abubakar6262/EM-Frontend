@@ -53,7 +53,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.get("/auth/refresh");
+        await api.post("/auth/refresh");
         processQueue(null);
         return api(original);
       } catch (err) {
