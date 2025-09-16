@@ -1,5 +1,4 @@
 // services/auth.ts
-import { u } from "framer-motion/client";
 import { api } from "./api";
 
 export type SignupPayload = {
