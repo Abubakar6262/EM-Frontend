@@ -1,10 +1,11 @@
+import { store } from "@/store";
+import { clearUser } from "@/store/slices/authSlice";
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
   withCredentials: true,
 });
-
 
 let isRefreshing = false;
 
@@ -39,7 +40,16 @@ api.interceptors.response.use(
     if (original.headers?.["x-skip-refresh"]) {
       return Promise.reject(error);
     }
-
+    if (
+      error.response?.status === 401 &&
+      typeof error.response?.data === "object" &&
+      error.response?.data !== null &&
+      "message" in error.response.data &&
+      (error.response.data as { message?: string }).message ===
+        "Please login first to access this resource"
+    ) {
+      store.dispatch(clearUser());
+    }
     if (error.response?.status === 401 && !original._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
